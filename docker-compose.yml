@@ -1,0 +1,21 @@
+services:
+  unitree_ros:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    environment:
+      - DISPLAY=${DISPLAY:-}  # For GUI applications like rviz2
+      - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+      - CYCLONEDDS_URI=/ros2_ws/cyclonedds.xml
+      - LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix  # X11 forwarding
+      - ${HOME}/.Xauthority:/root/.Xauthority:rw
+      - ./:/ros2_ws/
+    network_mode: "host"  # Required for ROS2 discovery and robot communication
+    ipc: "host"  # Required for shared memory
+    privileged: true  # Required for hardware access
+    devices:
+      - /dev/input:/dev/input  # For joystick access
+    restart: unless-stopped
+    command: bash -ci "colcon build && ros2 launch go2_bringup go2.launch.py lidar:=False realsense:=True rviz:=False foxglove:=True"
