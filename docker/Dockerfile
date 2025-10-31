@@ -42,8 +42,3 @@ RUN echo "source /opt/ros/${ROS_DISTRO}/setup.bash" >> /root/.bashrc && \
 
 # Remove apt cache
 RUN rm -rf /var/lib/apt/lists/*
-
-# add /ros2_ws to the entrypoint
-RUN sed --in-place --expression \
-      '$isource "/ros2_ws/install/setup.bash"' \
-      /ros_entrypoint.sh
