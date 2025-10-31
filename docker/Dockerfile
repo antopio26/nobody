@@ -22,23 +22,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Install specific numpy version first
 RUN pip install 'numpy<2.0.0'
 
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        ros-humble-pointcloud-to-laserscan \
+        ros-humble-realsense2-camera
+
 # Create workspace
 WORKDIR /ros2_ws
 
-# Clone the repository with submodules
-COPY . /ros2_ws/
-
-# Install ROS dependencies
-RUN . /opt/ros/${ROS_DISTRO}/setup.sh && \
-    rosdep install --from-paths src --ignore-src -r -y
-
-# Build the workspace
-RUN . /opt/ros/${ROS_DISTRO}/setup.sh && \
-    colcon build
-
 # Source ROS2 and workspace in bashrc
-RUN echo "source /opt/ros/${ROS_DISTRO}/setup.bash" >> /root/.bashrc && \
-    echo "source /ros2_ws/install/setup.bash" >> /root/.bashrc
-
-# Remove apt cache
-RUN rm -rf /var/lib/apt/lists/*
+RUN echo "source /opt/ros/${ROS_DISTRO}/setup.bash" >> /root/.bashrc

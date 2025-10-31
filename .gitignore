@@ -1,2 +1,5 @@
 src
 output.log
+build
+install
+log
