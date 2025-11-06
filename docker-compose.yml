@@ -3,13 +3,13 @@ services:
     build:
       context: .
       dockerfile: docker/Dockerfile
-    deploy: 
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: 1
-              capabilities: [gpu]
+    # deploy: 
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu]
     environment:
       - DISPLAY=${DISPLAY:-}  # For GUI applications like rviz2
       - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
