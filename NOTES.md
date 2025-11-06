@@ -25,6 +25,22 @@ ROBOT_IP=192.168.123.20 CONN_TYPE=cyclonedds docker compose up
 
 # TODO
 
-Follow this setup:
+Apply fixes
 
-https://github.com/Unitree-Go2-Robot/go2_robot/tree/humble
+## Fixes
+
+The pointcloud to laserscan in the go2_driver.launch.py must be modified to be like this:
+
+pointclod_to_laserscan_cmd = Node(
+        package='pointcloud_to_laserscan',
+        executable='pointcloud_to_laserscan_node',
+        name='pointcloud_to_laserscan',
+        namespace='',
+        output='screen',
+        remappings=[('/cloud_in', '/pointcloud')],
+        parameters=[{
+                'target_frame': 'base_link',
+                'max_height': 0.5,
+                # 'transform_tolerance': 0.01,
+        }],
+)
