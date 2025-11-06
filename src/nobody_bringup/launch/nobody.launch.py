@@ -17,7 +17,7 @@ def generate_launch_description():
     # Declare launch arguments
     launch_foxglove_arg = DeclareLaunchArgument(
         'foxglove',
-        default_value='true',
+        default_value='false',
         description='Whether to launch the Foxglove bridge'
     )
 
@@ -40,7 +40,7 @@ def generate_launch_description():
 
     # Path to the go2_bringup launch file
     go2_bringup_launch_file = os.path.join(
-        get_package_share_directory('go2_bringup'),
+        get_package_share_directory('nobody_bringup'),
         'launch',
         'go2.launch.py'
     )
@@ -54,9 +54,9 @@ def generate_launch_description():
 
     # Path to the navigation_mapping launch file
     navigation_mapping_launch_file = os.path.join(
-        get_package_share_directory('navigation_stack'),
+        get_package_share_directory('nobody_bringup'),
         'launch',
-        'navigation_mapping.launch.py'
+        'nav.launch.py'
     )
 
     # Include the go2_bringup launch file with specified arguments

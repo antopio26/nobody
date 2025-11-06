@@ -14,8 +14,8 @@ def generate_launch_description():
     Generates the launch description for SLAM, Nav2, and teleoperation.
     """
 
-    # Get the navigation_stack package directory
-    navigation_stack_dir = get_package_share_directory('navigation_stack')
+    # Get the nobody_bringup package directory
+    nobody_bringup_dir = get_package_share_directory('nobody_bringup')
 
     # Declare launch arguments
     launch_slam_arg = DeclareLaunchArgument(
@@ -42,8 +42,8 @@ def generate_launch_description():
     use_sim_time_config = LaunchConfiguration('use_sim_time')
 
     # Configuration file paths
-    slam_params_file = os.path.join(navigation_stack_dir, 'config', 'mapper_params.yaml')
-    nav2_params_file = os.path.join(navigation_stack_dir, 'config', 'nav2_params.yaml')
+    slam_params_file = os.path.join(nobody_bringup_dir, 'config', 'mapper_params.yaml')
+    nav2_params_file = os.path.join(nobody_bringup_dir, 'config', 'nav2_params.yaml')
 
     # SLAM Toolbox launch
     slam_toolbox_launch = IncludeLaunchDescription(
@@ -70,6 +70,7 @@ def generate_launch_description():
             'use_sim_time': use_sim_time_config,
         }.items(),
     )
+
 
     # Create the LaunchDescription with all components
     return LaunchDescription([

@@ -3,48 +3,51 @@ services:
     build:
       context: .
       dockerfile: docker/Dockerfile
-    # deploy: 
-    #   resources:
-    #     reservations:
-    #       devices:
-    #         - driver: nvidia
-    #           count: 1
-    #           capabilities: [gpu]
     environment:
-      - DISPLAY=${DISPLAY:-}  # For GUI applications like rviz2
+      - DISPLAY=${DISPLAY:-}
       - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
       - CYCLONEDDS_URI=/ros2_ws/cyclonedds.xml
       - LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
     volumes:
-      - /tmp/.X11-unix:/tmp/.X11-unix  # X11 forwarding
+      - /tmp/.X11-unix:/tmp/.X11-unix
       - ${HOME}/.Xauthority:/root/.Xauthority:rw
-      - ./:/ros2_ws/
-    network_mode: "host"  # Required for ROS2 discovery and robot communication
-    ipc: "host"  # Required for shared memory
-    privileged: true  # Required for hardware access
+      # Mount only your custom packages and config files
+      - ./src/nobody_bringup:/ros2_ws/src/nobody_bringup
+      - ./src/HesaiLidar_ROS_2.0:/ros2_ws/src/HesaiLidar_ROS_2.0
+      - ./cyclonedds.xml:/ros2_ws/cyclonedds.xml
+    network_mode: "host"
+    ipc: "host"
+    privileged: true
     devices:
-      - /dev/input:/dev/input  # For joystick access
+      - /dev/input:/dev/input
     restart: unless-stopped
-    command: bash -ci "rosdep install --from-paths src --ignore-src -r -y && colcon build && source /ros2_ws/install/setup.bash && ros2 launch navigation_stack nobody.launch.py foxglove:=true"
- 
- 
-  # foxglove_bridge:
-  #   build:
-  #     context: .
-  #     dockerfile: docker/Dockerfile
-  #   environment:
-  #     - DISPLAY=${DISPLAY:-}  # For GUI applications like rviz2
-  #     - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
-  #     - CYCLONEDDS_URI=/ros2_ws/cyclonedds.xml
-  #     - LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
-  #   volumes:
-  #     - /tmp/.X11-unix:/tmp/.X11-unix  # X11 forwarding  
-  #     - ${HOME}/.Xauthority:/root/.Xauthority:rw
-  #     - ./:/ros2_ws/
+    command: >
+      bash -c "
+      cd /ros2_ws &&
+      colcon build --packages-select nobody_bringup hesai_ros_driver --symlink-install &&
+      source /ros2_ws/install/setup.bash &&
+      ros2 launch nobody_bringup nobody.launch.py
+      "
 
-  #   network_mode: "host"  # Required for ROS2 discovery and robot communication
-  #   ipc: "host"  # Required for shared memory
-  #   privileged: true  # Required for hardware access
-  #   restart: unless-stopped
-  #   command: bash -ci "rosdep install --from-paths src --ignore-src -r -y && colcon build && source /ros2_ws/install/setup.bash && ros2 launch foxglove_bridge foxglove_bridge_launch.xml"
-
+  foxglove_bridge:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    environment:
+      - DISPLAY=${DISPLAY:-}
+      - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+      - CYCLONEDDS_URI=/ros2_ws/cyclonedds.xml
+      - LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix
+      - ${HOME}/.Xauthority:/root/.Xauthority:rw
+      - ./cyclonedds.xml:/ros2_ws/cyclonedds.xml
+    network_mode: "host"
+    ipc: "host"
+    privileged: true
+    restart: unless-stopped
+    command: >
+      bash -c "
+      source /ros2_ws/install/setup.bash &&
+      ros2 run foxglove_bridge foxglove_bridge
+      "

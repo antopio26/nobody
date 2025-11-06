@@ -1,8 +1,7 @@
 Prepare your third-party repos:
 ```bash
-cd src
-vcs import < ../dependencies.repos
-git clone --recurse-submodules https://github.com/HesaiTechnology/HesaiLidar_ROS_2.0.git
+    cd src
+    git clone --recurse-submodules https://github.com/HesaiTechnology/HesaiLidar_ROS_2.0.git
 ```
 
 Set the lidar IP to `config/config.yaml`
@@ -36,5 +35,13 @@ ros:
 ## RUN
 
 ``` bash
+# Build the image (only needed once or when dependencies change)
+docker compose build
+
+# Run both services
 docker compose up
+
+# Or run individually
+docker compose up unitree_ros
+docker compose up foxglove_bridge
 ```

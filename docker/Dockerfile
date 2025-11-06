@@ -17,20 +17,44 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ros-humble-rmw-cyclonedds-cpp \
     ros-humble-rosidl-generator-dds-idl \
     ros-humble-foxglove-bridge \
-    ffmpeg
+    ros-humble-pointcloud-to-laserscan \
+    ros-humble-realsense2-camera \
+    ros-humble-slam-toolbox \
+    ros-humble-navigation2 \
+    ros-humble-nav2-bringup \
+    python3-vcstool \
+    git \
+    ffmpeg \
+    && rm -rf /var/lib/apt/lists/*
 
-# Install specific numpy version first
+# Install specific numpy version
 RUN pip install 'numpy<2.0.0'
-
-RUN apt-get update && apt-get install -y --no-install-recommends \
-        ros-humble-pointcloud-to-laserscan \
-        ros-humble-realsense2-camera \
-        ros-humble-slam-toolbox \
-        ros-humble-navigation2 \
-        ros-humble-nav2-bringup
 
 # Create workspace
 WORKDIR /ros2_ws
 
+# Copy dependency files
+COPY dependencies.repos /tmp/dependencies.repos
+
+# Clone third-party repositories
+RUN mkdir -p src && \
+    cd src && \
+    vcs import < /tmp/dependencies.repos && \
+    git clone --recurse-submodules https://github.com/HesaiTechnology/HesaiLidar_ROS_2.0.git
+
+# Install dependencies
+RUN apt-get update && \
+    rosdep update && \
+    rosdep install --from-paths src --ignore-src -r -y && \
+    rm -rf /var/lib/apt/lists/*
+
+# Build the workspace
+RUN . /opt/ros/${ROS_DISTRO}/setup.sh && \
+    colcon build --symlink-install
+
 # Source ROS2 and workspace in bashrc
-RUN echo "source /opt/ros/${ROS_DISTRO}/setup.bash" >> /root/.bashrc
+RUN echo "source /opt/ros/${ROS_DISTRO}/setup.bash" >> /root/.bashrc && \
+    echo "source /ros2_ws/install/setup.bash" >> /root/.bashrc
+
+# Set default command
+CMD ["bash"]
