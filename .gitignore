@@ -1,4 +1,6 @@
-src
+src/go2_*
+src/unitree_*
+src/HesaiLidar_ROS_2.0
 output.log
 build
 install

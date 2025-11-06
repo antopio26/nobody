@@ -3,6 +3,13 @@ services:
     build:
       context: .
       dockerfile: docker/Dockerfile
+    deploy: 
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
     environment:
       - DISPLAY=${DISPLAY:-}  # For GUI applications like rviz2
       - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
@@ -18,4 +25,26 @@ services:
     devices:
       - /dev/input:/dev/input  # For joystick access
     restart: unless-stopped
-    command: bash -ci "rosdep install --from-paths src --ignore-src -r -y &&colcon build && source /ros2_ws/install/setup.bash && ros2 launch go2_bringup go2.launch.py lidar:=False realsense:=False rviz:=False foxglove:=True"
+    command: bash -ci "rosdep install --from-paths src --ignore-src -r -y && colcon build && source /ros2_ws/install/setup.bash && ros2 launch navigation_stack nobody.launch.py foxglove:=true"
+ 
+ 
+  # foxglove_bridge:
+  #   build:
+  #     context: .
+  #     dockerfile: docker/Dockerfile
+  #   environment:
+  #     - DISPLAY=${DISPLAY:-}  # For GUI applications like rviz2
+  #     - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+  #     - CYCLONEDDS_URI=/ros2_ws/cyclonedds.xml
+  #     - LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
+  #   volumes:
+  #     - /tmp/.X11-unix:/tmp/.X11-unix  # X11 forwarding  
+  #     - ${HOME}/.Xauthority:/root/.Xauthority:rw
+  #     - ./:/ros2_ws/
+
+  #   network_mode: "host"  # Required for ROS2 discovery and robot communication
+  #   ipc: "host"  # Required for shared memory
+  #   privileged: true  # Required for hardware access
+  #   restart: unless-stopped
+  #   command: bash -ci "rosdep install --from-paths src --ignore-src -r -y && colcon build && source /ros2_ws/install/setup.bash && ros2 launch foxglove_bridge foxglove_bridge_launch.xml"
+

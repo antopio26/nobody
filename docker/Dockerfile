@@ -24,7 +24,10 @@ RUN pip install 'numpy<2.0.0'
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
         ros-humble-pointcloud-to-laserscan \
-        ros-humble-realsense2-camera
+        ros-humble-realsense2-camera \
+        ros-humble-slam-toolbox \
+        ros-humble-navigation2 \
+        ros-humble-nav2-bringup
 
 # Create workspace
 WORKDIR /ros2_ws
