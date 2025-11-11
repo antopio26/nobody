@@ -16,6 +16,8 @@ Robot IP: 192.168.123.20
 ## Necessary division of concernes
 To offload calculations and exploit the better transport and protocols used by ROS2 we decided to run the foxglove bridge outside the robot companion computer. This hides from the foxglove the low level topics streamed over cyclonedds internal connection on board.
 
+> **WARN:** For now activating both interfaces breaks the ROS2 communication, tfs are not published even locally. 
+
 ## Run
 
 On the unitree_go2
