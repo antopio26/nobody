@@ -16,9 +16,16 @@ Robot IP: 192.168.123.20
 
 ## Run
 
+On the unitree_go2
 ```bash
-ROBOT_IP=192.168.123.20 CONN_TYPE=cyclonedds docker compose up
+docker compose up unitree_ros
 ```
+
+On another pc in the network that serves as bridge (better if it is the same running foxglove studio)
+```bash
+docker compose up foxglove_bridge
+```
+
 ## Setup DDS
 
 1. run ifconfig
@@ -26,7 +33,7 @@ ROBOT_IP=192.168.123.20 CONN_TYPE=cyclonedds docker compose up
 3. open `cyclonedds.xml`
 4. modify this line with the correct interface name `<NetworkInterface name="eth1" priority="default" multicast="default" />`
 
-# TODO
+> **NOTE**: With the new implementation this is not necessary anymore.
 
 ## Fixes
 
@@ -48,6 +55,6 @@ pointclod_to_laserscan_cmd = Node(
 )
 ```
 
-## Observations
+## Observations
 
 The voxel map in the other repository is produced by unitree drivers on lower levels. This needs to be investigated further to obtain access to this information.
