@@ -36,7 +36,6 @@ services:
     environment:
       - DISPLAY=${DISPLAY:-}
       - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
-      - CYCLONEDDS_URI=/ros2_ws/cyclonedds.xml
       - LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
     volumes:
       - /tmp/.X11-unix:/tmp/.X11-unix
