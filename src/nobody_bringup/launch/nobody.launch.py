@@ -85,6 +85,7 @@ def generate_launch_description():
         condition=IfCondition(launch_foxglove_config)
     )
 
+
     # Create the LaunchDescription with all components
     return LaunchDescription([
         launch_foxglove_arg,

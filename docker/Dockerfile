@@ -52,7 +52,7 @@ RUN apt-get update && \
 RUN . /opt/ros/${ROS_DISTRO}/setup.sh && \
     colcon build --symlink-install
 
-RUN apt install -y ros-humble-robot-body-filter
+# RUN apt-get update && apt-get install -y ros-humble-robot-self-filter
 
 # Source ROS2 and workspace in bashrc
 RUN echo "source /opt/ros/${ROS_DISTRO}/setup.bash" >> /root/.bashrc && \

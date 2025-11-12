@@ -1,21 +1,47 @@
-filter:
-  type: "robot_body_filter::RobotBodyFilterPointCloud2"
-  name: "robot_body_filter"
-  params:
+robot_self_filter: 
+  ros__parameters:
+    sensor_frame: "radar"
+
+    # 2. Elenco dei link del robot da filtrare
+    #    Questi nomi devono corrispondere ESATTAMENTE ai link nel tuo URDF.
+    #    Vedi la sezione "Come trovare i nomi dei link" qui sotto.
     links:
-      - name: "base_link" 
-        padding: 0.02    
-      - name: "FR_hip"   
-        padding: 0.02
-      - name: "FL_hip"  
-        padding: 0.02
+      - "base_link" # O "trunk", "body", ecc.
+      - "Head_upper"
+      - "Head_lower"
+      - "FL_hip"
+      - "FL_thigh"
+      - "FL_calf"
+      - "FL_foot"
+      - "FR_hip"
+      - "FR_thigh"
+      - "FR_calf"
+      - "FR_foot"
+      - "RL_hip"
+      - "RL_thigh"
+      - "RL_calf"
+      - "RL_foot"
+      - "RR_hip"
+      - "RR_thigh"
+      - "RR_calf"
+      - "RR_foot"
+      # - "tail_link" # Se presente
+      # NON includere il link del sensore Hesai stesso!
 
+    # === Parametri Opzionali (Aggiustamenti) ===
 
-    # Frame del sensore (opzionale, spesso dedotto dal messaggio)
-    sensor_frame: "hesai_frame_id" # Sostituisci con il frame_id del tuo LiDAR
+    # Aggiunge un "cuscinetto" di sicurezza attorno ai link (in metri).
+    # Utile se il modello URDF non è perfettissimo.
+    padding: 0.02 # 2 cm di margine
 
-    # Ombre: rimuove anche i punti "dietro" il robot
-    shadow:
-      enabled: true
-      # Distanza massima per cui un'ombra è considerata valida
-      max_shadow_distance: 1.0
+    # Fattore di scala per le collision mesh/primitive dei link.
+    # Di solito si lascia a 1.0.
+    scaling: 1.0
+
+    # Filtra anche i punti nell'"ombra" proiettata dal robot.
+    # Per un LiDAR 3D, di solito è meglio tenerlo a 'false'.
+    shadow: false
+
+    # Sorgente della descrizione del robot (di solito va bene il default)
+    # robot_description_topic: "/robot_description"
+    # tf_prefix: "" # Se usi un prefisso TF

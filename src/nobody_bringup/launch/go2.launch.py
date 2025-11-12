@@ -29,6 +29,9 @@ def generate_launch_description():
     lidar = LaunchConfiguration('lidar')
     realsense = LaunchConfiguration('realsense')
 
+    nobody_bringup_dir = get_package_share_directory('nobody_bringup')
+    robot_self_filter_config_file = os.path.join(nobody_bringup_dir, 'config', 'self_filter.yaml')
+
     declare_lidar_cmd = DeclareLaunchArgument(
         'lidar',
         default_value='False',
@@ -104,6 +107,18 @@ def generate_launch_description():
         arguments=['-0.12', '0', '0.1', '1.5708', '0', '0', 'Head_upper', 'hesai_lidar'],
         output='screen',
     )
+
+    # robot_body_filter_node = Node(
+    #     package='robot_self_filter',         
+    #     executable='robot_self_filter_node',
+    #     name='robot_self_filter',           
+    #     parameters=[robot_self_filter_config_file],
+    #     remappings=[
+    #         ('cloud_in', '/pointcloud'), 
+    #         ('cloud_out', '/points_filtered')   
+    #     ]
+    # )
+
 
     ld = LaunchDescription()
     ld.add_action(declare_lidar_cmd)
