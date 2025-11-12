@@ -20,7 +20,7 @@ services:
     privileged: true
     devices:
       - /dev/input:/dev/input
-    restart: unless-stopped
+    restart: no
     command: >
       bash -c "
       cd /ros2_ws &&
@@ -44,7 +44,7 @@ services:
     network_mode: "host"
     ipc: "host"
     privileged: true
-    restart: unless-stopped
+    restart: no
     command: >
       bash -c "
       source /ros2_ws/install/setup.bash &&

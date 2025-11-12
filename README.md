@@ -10,7 +10,7 @@ lidar:
 - driver:
     udp_port: 2368                                       #UDP port of lidar
     ptc_port: 9347                                       #PTC port of lidar
-    device_ip_address: <Device IP>                       #IP address of lidar
+    device_ip_address: 192.168.123.20                    #IP address of lidar
     pcap_path: "<Your PCAP file path>"                   #The path of pcap file (set during offline playback)
     correction_file_path: "<Your correction file path>"  #LiDAR angle file, required for offline playback of pcap/packet rosbag
     firetimes_path: "<Your firetime file path>"          #The path of firetimes file

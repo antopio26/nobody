@@ -87,12 +87,20 @@ def generate_launch_description():
         name='pointcloud_to_laserscan',
         namespace='',
         output='screen',
-        remappings=[('/cloud_in', '/pointcloud')],
+        remappings=[('/cloud_in', '/lidar_points')],
         parameters=[{
-                'target_frame': 'base_link',
+                'target_frame': 'hesai_lidar',
                 'max_height': 0.5,
                 # 'transform_tolerance': 0.01,
         }],
+    )
+
+    static_tf_lidar_cmd = Node(
+        package='tf2_ros',
+        executable='static_transform_publisher',
+        name='static_tf_lidar',
+        arguments=['-0.12', '0', '0.1', '1.5708', '0', '0', 'Head_upper', 'hesai_lidar'],
+        output='screen',
     )
 
     ld = LaunchDescription()
@@ -103,5 +111,6 @@ def generate_launch_description():
     ld.add_action(realsense_cmd)
     ld.add_action(driver_container)
     ld.add_action(pointcloud_to_laserscan_cmd)
+    ld.add_action(static_tf_lidar_cmd)
 
     return ld

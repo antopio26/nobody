@@ -63,7 +63,7 @@ def generate_launch_description():
     go2_bringup_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(go2_bringup_launch_file),
         launch_arguments={
-            'lidar': 'False',
+            'lidar': 'True',
             'realsense': 'False',
             'rviz': 'False',
         }.items()
