@@ -1,7 +1,9 @@
 src/go2_*
 src/unitree_*
 src/HesaiLidar_ROS_2.0
+src/foxglove
 output.log
 build
 install
 log
+temp
