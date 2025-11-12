@@ -1,0 +1,21 @@
+filter:
+  type: "robot_body_filter::RobotBodyFilterPointCloud2"
+  name: "robot_body_filter"
+  params:
+    links:
+      - name: "base_link" 
+        padding: 0.02    
+      - name: "FR_hip"   
+        padding: 0.02
+      - name: "FL_hip"  
+        padding: 0.02
+
+
+    # Frame del sensore (opzionale, spesso dedotto dal messaggio)
+    sensor_frame: "hesai_frame_id" # Sostituisci con il frame_id del tuo LiDAR
+
+    # Ombre: rimuove anche i punti "dietro" il robot
+    shadow:
+      enabled: true
+      # Distanza massima per cui un'ombra è considerata valida
+      max_shadow_distance: 1.0

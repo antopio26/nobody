@@ -90,10 +90,12 @@ def generate_launch_description():
         remappings=[('/cloud_in', '/lidar_points')],
         parameters=[{
                 'target_frame': 'hesai_lidar',
-                'max_height': 0.5,
+                'max_height': 0.7,
                 # 'transform_tolerance': 0.01,
         }],
     )
+
+    # ADD PointCloud to LaserScan for the internal lidar and remap the output topics
 
     static_tf_lidar_cmd = Node(
         package='tf2_ros',
