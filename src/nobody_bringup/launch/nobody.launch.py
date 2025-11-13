@@ -8,18 +8,12 @@ from launch.actions import IncludeLaunchDescription, DeclareLaunchArgument
 from launch.launch_description_sources import PythonLaunchDescriptionSource, FrontendLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
 from launch.conditions import IfCondition
+from launch_ros.actions import Node
 
 def generate_launch_description():
     """
     Generates the launch description to start the Go2 robot, navigation stack, and optionally the Foxglove bridge.
     """
-
-    # Declare launch arguments
-    launch_foxglove_arg = DeclareLaunchArgument(
-        'foxglove',
-        default_value='false',
-        description='Whether to launch the Foxglove bridge'
-    )
 
     launch_slam_arg = DeclareLaunchArgument(
         'slam',
@@ -34,7 +28,6 @@ def generate_launch_description():
     )
 
     # Create LaunchConfiguration variables
-    launch_foxglove_config = LaunchConfiguration('foxglove')
     launch_slam_config = LaunchConfiguration('slam')
     launch_nav2_config = LaunchConfiguration('nav2')
 
@@ -45,18 +38,18 @@ def generate_launch_description():
         'go2.launch.py'
     )
 
-    # Path to the foxglove_bridge launch file
-    foxglove_bridge_launch_file = os.path.join(
-        get_package_share_directory('foxglove_bridge'),
-        'launch',
-        'foxglove_bridge_launch.xml'
-    )
-
     # Path to the navigation_mapping launch file
     navigation_mapping_launch_file = os.path.join(
         get_package_share_directory('nobody_bringup'),
         'launch',
         'nav.launch.py'
+    )
+
+    # Path to the pointcloud filter config file
+    pointcloud_filter_config_file = os.path.join(
+        get_package_share_directory('nobody_bringup'),
+        'config',
+        'pointcloud_filter.yaml'
     )
 
     # Include the go2_bringup launch file with specified arguments
@@ -79,19 +72,20 @@ def generate_launch_description():
         }.items()
     )
 
-    # Include the foxglove_bridge launch file conditionally
-    foxglove_bridge_launch = IncludeLaunchDescription(
-        FrontendLaunchDescriptionSource(foxglove_bridge_launch_file),
-        condition=IfCondition(launch_foxglove_config)
+    # Pointcloud filter node
+    pointcloud_filter_node = Node(
+        package='nobody_bringup',
+        executable='pointcloud_filter_node.py',
+        name='pointcloud_filter_node',
+        parameters=[pointcloud_filter_config_file],
+        output='screen'
     )
-
 
     # Create the LaunchDescription with all components
     return LaunchDescription([
-        launch_foxglove_arg,
         launch_slam_arg,
         launch_nav2_arg,
         go2_bringup_launch,
+        pointcloud_filter_node,
         navigation_mapping_launch,
-        foxglove_bridge_launch,
     ])

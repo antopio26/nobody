@@ -1,0 +1,11 @@
+pointcloud_filter_node:
+  ros__parameters:
+    input_topic: '/pointcloud'
+    output_topic: '/filtered_pointcloud'
+    filter_type: 'bounding_box'
+    bounding_box_frame: 'base_link'
+    # Remove points inside this box (robot body filtering)
+    # Format: [x_min, y_min, z_min]
+    bounding_box_min: [-0.450, -0.200, 0.0]
+    # Format: [x_max, y_max, z_max]
+    bounding_box_max: [0.360, 0.200, 0.8]
