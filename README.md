@@ -29,7 +29,12 @@ ros:
     ros_send_point_cloud_topic: /lidar_points            #Topic used to send point cloud through ROS
     send_packet_ros: true                                #true: Send packets through ROS 
     send_point_cloud_ros: true                           #true: Send point cloud through ROS 
+
+    ...
+
+    use_timestamp_type: 1
 ```
+
 
 
 ## RUN
