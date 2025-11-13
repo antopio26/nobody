@@ -166,6 +166,7 @@ local_costmap:
         publish_voxel_map: False
         combination_method: 1
         mark_threshold: 2
+        footprint_clearing: True
         observation_sources: "hesai unitree"
         hesai:
           topic: /lidar_points
@@ -229,6 +230,7 @@ global_costmap:
         publish_voxel_map: True
         combination_method: 1
         mark_threshold: 2
+        footprint_clearing: True
         observation_sources: "hesai unitree"
         hesai:
           topic: /lidar_points
