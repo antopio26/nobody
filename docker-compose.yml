@@ -42,6 +42,7 @@ services:
       - /tmp/.X11-unix:/tmp/.X11-unix
       - ${HOME}/.Xauthority:/root/.Xauthority:rw
       - ./cyclonedds.xml:/ros2_ws/cyclonedds.xml
+      - ./src/unitree_go:/test/src/unitree_go
     network_mode: "host"
     ipc: "host"
     privileged: true
@@ -49,5 +50,8 @@ services:
     command: >
       bash -c "
       source /ros2_ws/install/setup.bash &&
+      cd /test &&
+      colcon build --packages-select unitree_go --symlink-install &&
+      source /test/install/local_setup.bash &&
       ros2 run foxglove_bridge foxglove_bridge
       "
