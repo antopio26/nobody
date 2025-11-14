@@ -1,5 +1,11 @@
 # Argo - Nobody
 
+This repository contains the a ROS2 package and docker setup to run all the code needed to operate the Unitree GO2 EDU robot from an external Foxglove interface.
+
+It includes a basic Nav2 setup that merges the info from the onboard lidar and additional Hesai lidar.
+
+Foxglove layouts will be available in the future.
+
 ## Run
 
 To run the package, install docker on the extension module and run this commands:
@@ -15,6 +21,13 @@ docker compose up
 docker compose up unitree_ros
 docker compose up foxglove_bridge
 ```
+
+## Setup DDS
+
+1. run ifconfig
+2. search for the interface with ip `192.168.123.18` (eg. `eth1`)
+3. open `cyclonedds.xml`
+4. modify this line with the correct interface name `<NetworkInterface name="eth1" priority="default" multicast="default" />`
 
 ## Config Hesai Lidar
 
