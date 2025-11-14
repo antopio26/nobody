@@ -1,7 +1,8 @@
 # Argo - Nobody
-This repository contains the a ROS2 package and docker setup to run all the code needed to operate the Unitree GO2 EDU robot from an external Foxglove interface.
 
 ![Argo navigation visualized via Foxglove](images/cover.gif)
+
+This repository contains the a ROS2 package and docker setup to run all the code needed to operate the Unitree GO2 EDU robot from an external Foxglove interface.
 
 It includes a basic Nav2 setup that merges the info from the onboard lidar and additional Hesai lidar. Foxglove layouts will be available in the future.
 
