@@ -84,19 +84,24 @@ class PointCloudFilterNode(Node):
         aabb_max = np.max(transformed_corners, axis=0)
 
         # 2. PRESERVE ALL FIELDS
-        # Read structured array. This preserves all fields (x,y,z,intensity,ring,time...)
+        # Read all points with all fields preserved
         try:
-            pc_arr = pc2.pointcloud2_to_array(msg)
+            # read_points returns generator, convert to list to get all points
+            # skip_nans=False ensures we keep all points including NaN values
+            points_list = list(pc2.read_points(msg, skip_nans=False))
+            if len(points_list) == 0:
+                self.get_logger().warn("Empty pointcloud received")
+                return
         except Exception as e:
-            self.get_logger().warn(f"Failed to convert PointCloud2 to array: {e}")
+            self.get_logger().warn(f"Failed to read PointCloud2: {e}")
             return
 
-        if not {'x', 'y', 'z'}.issubset(pc_arr.dtype.fields):
-            self.get_logger().warn("Input pointcloud must have x,y,z fields")
-            return
-
-        # Get just the XYZ data for filtering
-        xyz = np.stack([pc_arr['x'], pc_arr['y'], pc_arr['z']], axis=-1)
+        # Convert to numpy array for filtering
+        # Each point is a tuple with all fields (x, y, z, intensity, ring, time, etc.)
+        points_array = np.array(points_list)
+        
+        # Extract XYZ for filtering (first 3 columns)
+        xyz = points_array[:, :3]
         
         # 3. APPLY FILTER
         # Filter points *outside* the transformed box
@@ -104,14 +109,15 @@ class PointCloudFilterNode(Node):
                  (xyz[:,1] >= aabb_min[1]) & (xyz[:,1] <= aabb_max[1]) &
                  (xyz[:,2] >= aabb_min[2]) & (xyz[:,2] <= aabb_max[2]))
         
-        # Apply the mask to the full structured array
-        filtered_pc_arr = pc_arr[mask]
+        # Apply the mask to keep all fields
+        filtered_points = points_array[mask]
         
         # 4. RE-PUBLISH WITH ALL FIELDS PRESERVED
-        # Convert the filtered structured array back to a PointCloud2 message
-        # This automatically uses the dtype of filtered_pc_arr to create the
-        # new PointField[] structure, preserving all original fields.
-        filtered_msg = pc2.array_to_pointcloud2(filtered_pc_arr, msg.header)
+        # Convert back to list of tuples for create_cloud
+        filtered_points_list = [tuple(point) for point in filtered_points]
+        
+        # Create new message with same fields as input
+        filtered_msg = pc2.create_cloud(msg.header, msg.fields, filtered_points_list)
         
         self.pub.publish(filtered_msg)
 
