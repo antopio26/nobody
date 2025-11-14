@@ -50,10 +50,10 @@ def generate_launch_description():
             'launch/'), 'robot.launch.py'])
     )
 
-    lidar_cmd = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource([os.path.join(
-            get_package_share_directory('hesai_ros_driver'),
-            'launch/'), 'start.py']),
+    lidar_cmd = Node(
+        namespace='hesai_ros_driver',
+        package='hesai_ros_driver',
+        executable='hesai_ros_driver_node',
         condition=IfCondition(PythonExpression([lidar]))
     )
 

@@ -149,7 +149,7 @@ local_costmap:
       width: 6
       height: 6
       resolution: 0.05
-      # track_unknown_space: True
+      track_unknown_space: True
       # unknown_cost_value: 200
       always_send_full_costmap: True
       footprint: "[ [0.360, 0.200], [0.360, -0.200], [-0.450, -0.200], [-0.450, 0.200] ]"
@@ -158,15 +158,15 @@ local_costmap:
       static_layer:
         plugin: "nav2_costmap_2d::StaticLayer"
         map_subscribe_transient_local: True
-        # footprint_clearing: True
+        footprint_clearing: True
 
       voxel_layer:
         plugin: "nav2_costmap_2d::VoxelLayer"
         enabled: True
         publish_voxel_map: False
         combination_method: 1
-        # mark_threshold: 2
-        # footprint_clearing: True
+        mark_threshold: 2
+        footprint_clearing: True
         observation_sources: "hesai unitree"
         hesai:
           topic: /lidar_points
@@ -180,8 +180,8 @@ local_costmap:
           obstacle_max_range: 2.5
           obstacle_min_range: 0.0
         unitree:
-          topic: /filtered_pointcloud
-          # expected_update_rate: 0.5
+          topic: /pointcloud
+          expected_update_rate: 0.5
           min_obstacle_height: 0.1  # Added: Filter ground points
           max_obstacle_height: 0.7
           clearing: True
@@ -191,7 +191,7 @@ local_costmap:
           raytrace_min_range: 0.0
           obstacle_max_range: 2.5
           obstacle_min_range: 0.2
-          # observation_persistence: 2.0
+          observation_persistence: 2.0
 
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
@@ -208,7 +208,7 @@ global_costmap:
       robot_base_frame: base_link
       use_sim_time: False
       resolution: 0.05
-      # track_unknown_space: True
+      track_unknown_space: True
       # unknown_cost_value: 200
       static_map: True
       width: 500
@@ -221,15 +221,15 @@ global_costmap:
       static_layer:
         plugin: "nav2_costmap_2d::StaticLayer"
         map_subscribe_transient_local: True
-        # footprint_clearing: True
+        footprint_clearing: True
 
       voxel_layer:
         plugin: "nav2_costmap_2d::VoxelLayer"
         enabled: True
         publish_voxel_map: True
         combination_method: 1
-        # mark_threshold: 2
-        # footprint_clearing: True
+        mark_threshold: 2
+        footprint_clearing: True
         observation_sources: "hesai unitree"
         hesai:
           topic: /lidar_points
@@ -243,8 +243,8 @@ global_costmap:
           obstacle_max_range: 5.0
           obstacle_min_range: 0.0
         unitree:
-          topic: /filtered_pointcloud
-          # expected_update_rate: 0.5
+          topic: /pointcloud
+          expected_update_rate: 0.5
           min_obstacle_height: 0.1  # Added: Filter ground points
           max_obstacle_height: 0.7
           clearing: True
@@ -254,7 +254,7 @@ global_costmap:
           raytrace_min_range: 0.0
           obstacle_max_range: 5.0
           obstacle_min_range: 0.2
-          # observation_persistence: 2.0
+          observation_persistence: 2.0
 
       denoise_layer:
         plugin: "nav2_costmap_2d::DenoiseLayer"

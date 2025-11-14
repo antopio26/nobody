@@ -1,10 +1,5 @@
-Prepare your third-party repos:
-```bash
-    cd src
-    git clone --recurse-submodules https://github.com/HesaiTechnology/HesaiLidar_ROS_2.0.git
-```
 
-Set the lidar IP to `config/config.yaml`
+Set the lidar IP to `src/nobody_bringup/config/hesai_params.yaml`
 ```yaml
 lidar:
 - driver:
@@ -34,7 +29,6 @@ ros:
 
     use_timestamp_type: 1
 ```
-
 
 
 ## RUN

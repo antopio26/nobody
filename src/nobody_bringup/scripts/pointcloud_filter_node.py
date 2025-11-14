@@ -96,12 +96,8 @@ class PointCloudFilterNode(Node):
             self.get_logger().warn(f"Failed to read PointCloud2: {e}")
             return
 
-        # Convert to numpy array for filtering
-        # Each point is a tuple with all fields (x, y, z, intensity, ring, time, etc.)
-        points_array = np.array(points_list)
-        
-        # Extract XYZ for filtering (first 3 columns)
-        xyz = points_array[:, :3]
+        # Each point is a tuple, extract x,y,z for filtering
+        xyz = np.array([[p[0], p[1], p[2]] for p in points_list])
         
         # 3. APPLY FILTER
         # Filter points *outside* the transformed box
@@ -109,12 +105,10 @@ class PointCloudFilterNode(Node):
                  (xyz[:,1] >= aabb_min[1]) & (xyz[:,1] <= aabb_max[1]) &
                  (xyz[:,2] >= aabb_min[2]) & (xyz[:,2] <= aabb_max[2]))
         
-        # Apply the mask to keep all fields
-        filtered_points = points_array[mask]
+        # Apply the mask to keep all fields (using original points_list)
+        filtered_points_list = [points_list[i] for i in range(len(points_list)) if mask[i]]
         
         # 4. RE-PUBLISH WITH ALL FIELDS PRESERVED
-        # Convert back to list of tuples for create_cloud
-        filtered_points_list = [tuple(point) for point in filtered_points]
         
         # Create new message with same fields as input
         filtered_msg = pc2.create_cloud(msg.header, msg.fields, filtered_points_list)
