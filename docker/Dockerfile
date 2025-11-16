@@ -22,6 +22,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ros-humble-slam-toolbox \
     ros-humble-navigation2 \
     ros-humble-nav2-bringup \
+    ros-humble-spatio-temporal-voxel-layer \
     python3-vcstool \
     git \
     ffmpeg \
@@ -52,11 +53,12 @@ RUN apt-get update && \
 RUN . /opt/ros/${ROS_DISTRO}/setup.sh && \
     colcon build --symlink-install
 
-# RUN apt-get update && apt-get install -y ros-humble-robot-self-filter
-
 # Source ROS2 and workspace in bashrc
 RUN echo "source /opt/ros/${ROS_DISTRO}/setup.bash" >> /root/.bashrc && \
     echo "source /ros2_ws/install/setup.bash" >> /root/.bashrc
+    
+# Ensure jemalloc memory allocator workaround is active
+ENV LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libjemalloc.so.2
 
 # Set default command
 CMD ["bash"]

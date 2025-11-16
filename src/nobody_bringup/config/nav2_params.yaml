@@ -1,3 +1,17 @@
+# ============================================================================
+# Nav2 Configuration for Unitree Go2 with MPPI Controller + STVL
+# Optimized for precise movements, tight maneuvers, and in-place rotations
+# ============================================================================
+# Key improvements:
+# 1. MPPI Controller (with Rotation Shim option commented out)
+# 2. Velocity Smoother to handle hardware deadband
+# 3. SPATIO-TEMPORAL VOXEL LAYER (STVL) replacing standard voxel_layer
+# 4. Increased controller frequency (5Hz -> 30Hz)
+# 5. Tightened planner tolerance (3.0m -> 0.5m)
+# 6. Optimized costmap update rates
+# 7. VelocityDeadband critic for MPPI
+# ============================================================================
+
 bt_navigator:
   ros__parameters:
     use_sim_time: False
@@ -6,57 +20,53 @@ bt_navigator:
     odom_topic: odom
     bt_loop_duration: 10
     default_server_timeout: 20
-    # 'default_nav_through_poses_bt_xml' and 'default_nav_to_pose_bt_xml' are use defaults:
-    # nav2_bt_navigator/navigate_to_pose_w_replanning_and_recovery.xml
-    # nav2_bt_navigator/navigate_through_poses_w_replanning_and_recovery.xml
-    # They can be set here or via a RewrittenYaml remap from a parent launch file to Nav2.
     plugin_lib_names:
-    - nav2_compute_path_to_pose_action_bt_node
-    - nav2_compute_path_through_poses_action_bt_node
-    - nav2_smooth_path_action_bt_node
-    - nav2_follow_path_action_bt_node
-    - nav2_spin_action_bt_node
-    - nav2_wait_action_bt_node
-    - nav2_assisted_teleop_action_bt_node
-    - nav2_back_up_action_bt_node
-    - nav2_drive_on_heading_bt_node
-    - nav2_clear_costmap_service_bt_node
-    - nav2_is_stuck_condition_bt_node
-    - nav2_goal_reached_condition_bt_node
-    - nav2_goal_updated_condition_bt_node
-    - nav2_globally_updated_goal_condition_bt_node
-    - nav2_is_path_valid_condition_bt_node
-    - nav2_initial_pose_received_condition_bt_node
-    - nav2_reinitialize_global_localization_service_bt_node
-    - nav2_rate_controller_bt_node
-    - nav2_distance_controller_bt_node
-    - nav2_speed_controller_bt_node
-    - nav2_truncate_path_action_bt_node
-    - nav2_truncate_path_local_action_bt_node
-    - nav2_goal_updater_node_bt_node
-    - nav2_recovery_node_bt_node
-    - nav2_pipeline_sequence_bt_node
-    - nav2_round_robin_node_bt_node
-    - nav2_transform_available_condition_bt_node
-    - nav2_time_expired_condition_bt_node
-    - nav2_path_expiring_timer_condition
-    - nav2_distance_traveled_condition_bt_node
-    - nav2_single_trigger_bt_node
-    - nav2_goal_updated_controller_bt_node
-    - nav2_is_battery_low_condition_bt_node
-    - nav2_navigate_through_poses_action_bt_node
-    - nav2_navigate_to_pose_action_bt_node
-    - nav2_remove_passed_goals_action_bt_node
-    - nav2_planner_selector_bt_node
-    - nav2_controller_selector_bt_node
-    - nav2_goal_checker_selector_bt_node
-    - nav2_controller_cancel_bt_node
-    - nav2_path_longer_on_approach_bt_node
-    - nav2_wait_cancel_bt_node
-    - nav2_spin_cancel_bt_node
-    - nav2_back_up_cancel_bt_node
-    - nav2_assisted_teleop_cancel_bt_node
-    - nav2_drive_on_heading_cancel_bt_node
+      - nav2_compute_path_to_pose_action_bt_node
+      - nav2_compute_path_through_poses_action_bt_node
+      - nav2_smooth_path_action_bt_node
+      - nav2_follow_path_action_bt_node
+      - nav2_spin_action_bt_node
+      - nav2_wait_action_bt_node
+      - nav2_assisted_teleop_action_bt_node
+      - nav2_back_up_action_bt_node
+      - nav2_drive_on_heading_bt_node
+      - nav2_clear_costmap_service_bt_node
+      - nav2_is_stuck_condition_bt_node
+      - nav2_goal_reached_condition_bt_node
+      - nav2_goal_updated_condition_bt_node
+      - nav2_globally_updated_goal_condition_bt_node
+      - nav2_is_path_valid_condition_bt_node
+      - nav2_initial_pose_received_condition_bt_node
+      - nav2_reinitialize_global_localization_service_bt_node
+      - nav2_rate_controller_bt_node
+      - nav2_distance_controller_bt_node
+      - nav2_speed_controller_bt_node
+      - nav2_truncate_path_action_bt_node
+      - nav2_truncate_path_local_action_bt_node
+      - nav2_goal_updater_node_bt_node
+      - nav2_recovery_node_bt_node
+      - nav2_pipeline_sequence_bt_node
+      - nav2_round_robin_node_bt_node
+      - nav2_transform_available_condition_bt_node
+      - nav2_time_expired_condition_bt_node
+      - nav2_path_expiring_timer_condition
+      - nav2_distance_traveled_condition_bt_node
+      - nav2_single_trigger_bt_node
+      - nav2_goal_updated_controller_bt_node
+      - nav2_is_battery_low_condition_bt_node
+      - nav2_navigate_through_poses_action_bt_node
+      - nav2_navigate_to_pose_action_bt_node
+      - nav2_remove_passed_goals_action_bt_node
+      - nav2_planner_selector_bt_node
+      - nav2_controller_selector_bt_node
+      - nav2_goal_checker_selector_bt_node
+      - nav2_controller_cancel_bt_node
+      - nav2_path_longer_on_approach_bt_node
+      - nav2_wait_cancel_bt_node
+      - nav2_spin_cancel_bt_node
+      - nav2_back_up_cancel_bt_node
+      - nav2_assisted_teleop_cancel_bt_node
+      - nav2_drive_on_heading_cancel_bt_node
 
 bt_navigator_navigate_through_poses_rclcpp_node:
   ros__parameters:
@@ -66,16 +76,116 @@ bt_navigator_navigate_to_pose_rclcpp_node:
   ros__parameters:
     use_sim_time: False
 
+# ============================================================================
+# VELOCITY SMOOTHER - Handles hardware velocity deadband
+# ============================================================================
+velocity_smoother:
+  ros__parameters:
+    use_sim_time: False
+    smoothing_frequency: 30.0  # Match controller frequency
+    scale_velocities: false
+    feedback: "OPEN_LOOP"  # Use OPEN_LOOP if odometry is <50Hz or noisy
+    # TODO: Test CLOSED_LOOP if odometry is reliable
+
+    # Maximum velocities (m/s, m/s, rad/s)
+    max_velocity: [2.0, 0.0, 2.0]
+    min_velocity: [-0.35, 0.0, -2.0]
+
+    # CRITICAL: Hardware deadband for Unitree Go2
+    # Velocities below these thresholds are set to zero
+    # Adjust these based on your empirical testing
+    deadband_velocity: [0.15, 0.0, 0.2]  # [vx, vy, wz]
+
+    # Acceleration limits (m/s^2, m/s^2, rad/s^2)
+    max_accel: [2.5, 0.0, 3.2]
+    max_decel: [-2.5, 0.0, -3.2]
+
+    # Timeout and odometry settings
+    velocity_timeout: 1.0
+    odom_topic: "odom" 
+    odom_duration: 0.1
+    # TODO: Test odom topic
+
+# ------------------------------------------------------------------------------
+# FOLLOWING SERVER (Object/Frame Following)
+# ------------------------------------------------------------------------------
+following_server:
+  ros__parameters:
+    controller_frequency: 50.0
+    detection_timeout: 2.0
+    rotate_to_object_timeout: 10.0
+    static_object_timeout: -1.0  # follow indefinitely
+    linear_tolerance: 0.15
+    angular_tolerance: 0.15
+    max_retries: 3
+    base_frame: "base_link"
+    fixed_frame: "odom"
+    filter_coef: 0.1
+    desired_distance: 1.0            # Target follow distance (in meters)
+    skip_orientation: true
+    search_by_rotating: false
+    odom_topic: "odom"
+    odom_duration: 0.3
+    transform_tolerance: 0.1
+    controller:
+      k_phi: 3.0
+      k_delta: 2.0
+      beta: 0.4
+      lambda: 2.0
+      v_linear_min: 0.1
+      v_linear_max: 0.5
+      v_angular_max: 1.0
+      slowdown_radius: 0.15
+      use_collision_detection: false
+      transform_tolerance: 0.1
+
+# ------------------------------------------------------------------------------
+# FOLLOWING SERVER (Object/Frame Following)
+# ------------------------------------------------------------------------------
+following_server:
+  ros__parameters:
+    controller_frequency: 50.0
+    detection_timeout: 2.0
+    rotate_to_object_timeout: 10.0
+    static_object_timeout: -1.0  # follow indefinitely
+    linear_tolerance: 0.15
+    angular_tolerance: 0.15
+    max_retries: 3
+    base_frame: "base_link"
+    fixed_frame: "odom"
+    filter_coef: 0.1
+    desired_distance: 1.0  # Target follow distance (in meters)
+    skip_orientation: true
+    search_by_rotating: false
+    odom_topic: "odom"
+    odom_duration: 0.3
+    transform_tolerance: 0.1
+    controller:
+      k_phi: 3.0
+      k_delta: 2.0
+      beta: 0.4
+      lambda: 2.0
+      v_linear_min: 0.1
+      v_linear_max: 0.5
+      v_angular_max: 1.0
+      slowdown_radius: 0.15
+      use_collision_detection: false
+      transform_tolerance: 0.1
+
+
+# ============================================================================
+# CONTROLLER SERVER - MPPI Configuration
+# ============================================================================
 controller_server:
   ros__parameters:
     use_sim_time: False
-    controller_frequency: 5.0
+    controller_frequency: 30.0  # CHANGED: 5.0 -> 30.0 Hz for responsive control
     min_x_velocity_threshold: 0.001
     min_y_velocity_threshold: 0.001
     min_theta_velocity_threshold: 0.001
     failure_tolerance: 0.3
     progress_checker_plugin: "progress_checker"
-    goal_checker_plugins: ["general_goal_checker"] # "precise_goal_checker"
+    goal_checker_plugins: ["general_goal_checker"]
     controller_plugins: ["FollowPath"]
 
     # Progress checker parameters
@@ -83,65 +193,145 @@ controller_server:
       plugin: "nav2_controller::SimpleProgressChecker"
       required_movement_radius: 0.1
       movement_time_allowance: 10.0
-    # Goal checker parameters
-    #precise_goal_checker:
-    #  plugin: "nav2_controller::SimpleGoalChecker"
-    #  xy_goal_tolerance: 0.25
-    #  yaw_goal_tolerance: 0.25
-    #  stateful: True
+
+    # Goal checker parameters - TIGHTENED
     general_goal_checker:
       stateful: True
       plugin: "nav2_controller::SimpleGoalChecker"
-      xy_goal_tolerance: 0.15
-      yaw_goal_tolerance: 0.2
-    # DWB parameters
-    FollowPath:
-      plugin: "dwb_core::DWBLocalPlanner"
-      debug_trajectory_details: True
-      min_vel_x: 0.2
-      min_vel_y: 0.2
-      max_vel_x: 2.0 #changed
-      max_vel_y: 0.0
-      max_vel_theta: 2.0 #changed
-      min_speed_xy: 0.2
-      max_speed_xy: 2.0 #changed
-      min_speed_theta: 0.3
-      # Add high threshold velocity for turtlebot 3 issue.
-      # https://github.com/ROBOTIS-GIT/turtlebot3_simulations/issues/75
-      acc_lim_x: 2.5
-      acc_lim_y: 2.5
-      acc_lim_theta: 3.2
-      decel_lim_x: -2.5
-      decel_lim_y: -2.5
-      decel_lim_theta: -3.2
-      vx_samples: 20
-      vy_samples: 20
-      vtheta_samples: 20
-      sim_time: 1.5 #changed
-      linear_granularity: 0.05
-      angular_granularity: 0.025
-      transform_tolerance: 0.2
-      xy_goal_tolerance: 0.15 # changed 
-      trans_stopped_velocity: 0.25
-      short_circuit_trajectory_evaluation: True
-      stateful: True
-      critics: ["RotateToGoal", "Oscillation", "BaseObstacle", "GoalAlign", "PathAlign", "PathDist", "GoalDist"]
-      BaseObstacle.scale: 0.02
-      PathAlign.scale: 50.0 # 32.0
-      PathAlign.forward_point_distance: 0.1
-      GoalAlign.scale: 24.0
-      GoalAlign.forward_point_distance: 0.1
-      PathDist.scale: 50.0 # 32.0
-      GoalDist.scale: 24.0 # 24.0
-      RotateToGoal.scale: 32.0
-      RotateToGoal.slowing_factor: 5.0
-      RotateToGoal.lookahead_time: -1.0
+      xy_goal_tolerance: 0.10  # CHANGED: 0.15 -> 0.10 m for precision
+      yaw_goal_tolerance: 0.15  # CHANGED: 0.20 -> 0.15 rad for precision
 
+    # ========================================================================
+    # MPPI CONTROLLER - Model Predictive Path Integral
+    # ========================================================================
+    FollowPath:
+      plugin: "nav2_mppi_controller::MPPIController"
+
+      # Time and batch parameters
+      time_steps: 56
+      model_dt: 0.05
+      batch_size: 2000
+      iteration_count: 1
+
+      # Velocity limits for Unitree Go2
+      vx_max: 2.0
+      vx_min: -0.35
+      vy_max: 0.0
+      wz_max: 2.0
+
+      # Acceleration limits
+      ax_max: 2.5
+      ax_min: -2.5
+      ay_max: 0.0
+      az_max: 3.2
+
+      # MPPI algorithm parameters
+      temperature: 0.3
+      gamma: 0.015
+      motion_model: "DiffDrive"
+
+      # Trajectory sampling parameters
+      vx_std: 0.2
+      vy_std: 0.0
+      wz_std: 0.4
+
+      # Path handling
+      prune_distance: 1.5
+      transform_tolerance: 0.2
+      enforce_path_inversion: false
+
+      # Critics for trajectory evaluation
+      critics: [
+        "ConstraintCritic",
+        "CostCritic", 
+        "GoalCritic",
+        "GoalAngleCritic",
+        "PathAlignCritic",
+        "PathFollowCritic",
+        "PathAngleCritic",
+        "PreferForwardCritic",
+        "VelocityDeadbandCritic"
+      ]
+
+      # Constraint Critic
+      ConstraintCritic:
+        enabled: true
+        cost_weight: 4.0
+        cost_power: 1
+
+      # Cost Critic
+      CostCritic:
+        enabled: true
+        cost_weight: 3.8
+        cost_power: 1
+        critical_cost: 300.0
+        consider_footprint: true
+        collision_cost: 1000000.0
+        near_goal_distance: 1.0
+        trajectory_point_step: 2
+
+      # Goal Critic
+      GoalCritic:
+        enabled: true
+        cost_weight: 5.0
+        cost_power: 1
+        threshold_to_consider: 1.4
+
+      # Goal Angle Critic
+      GoalAngleCritic:
+        enabled: true
+        cost_weight: 3.0
+        cost_power: 1
+        threshold_to_consider: 0.4
+
+      # Path Align Critic
+      PathAlignCritic:
+        enabled: true
+        cost_weight: 10.0
+        cost_power: 1
+        max_path_occupancy_ratio: 0.05
+        trajectory_point_step: 4
+        threshold_to_consider: 0.5
+
+      # Path Follow Critic
+      PathFollowCritic:
+        enabled: true
+        cost_weight: 5.0
+        cost_power: 1
+        offset_from_furthest: 6
+        threshold_to_consider: 1.4
+
+      # Path Angle Critic
+      PathAngleCritic:
+        enabled: true
+        cost_weight: 2.0
+        cost_power: 1
+        offset_from_furthest: 4
+        threshold_to_consider: 0.5
+        max_angle_to_furthest: 1.2
+
+      # Prefer Forward Critic
+      PreferForwardCritic:
+        enabled: true
+        cost_weight: 5.0
+        cost_power: 1
+        threshold_to_consider: 0.5
+
+      # Velocity Deadband Critic
+      VelocityDeadbandCritic:
+        enabled: true
+        cost_weight: 35.0
+        cost_power: 1
+        deadband_velocities: [0.15, 0.0, 0.2]
+
+# ============================================================================
+# LOCAL COSTMAP with SPATIO-TEMPORAL VOXEL LAYER
+# ============================================================================
 local_costmap:
   local_costmap:
     ros__parameters:
-      update_frequency: 10.0
-      publish_frequency: 5.0
+      update_frequency: 15.0  # CHANGED: 10.0 -> 15.0 Hz
+      publish_frequency: 10.0  # CHANGED: 5.0 -> 10.0 Hz
       global_frame: odom
       robot_base_frame: base_link
       use_sim_time: False
@@ -149,55 +339,117 @@ local_costmap:
       width: 6
       height: 6
       resolution: 0.05
-      track_unknown_space: True
-      # unknown_cost_value: 200
+      track_unknown_space: true  # STVL supports unknown space tracking
       always_send_full_costmap: True
       footprint: "[ [0.360, 0.200], [0.360, -0.200], [-0.450, -0.200], [-0.450, 0.200] ]"
-      plugins: ["static_layer", "voxel_layer", "inflation_layer"]
 
-      static_layer:
-        plugin: "nav2_costmap_2d::StaticLayer"
-        map_subscribe_transient_local: True
-        footprint_clearing: True
+      # STVL replaces static_layer and voxel_layer
+      plugins: ["stvl_layer", "inflation_layer"]
 
-      voxel_layer:
-        plugin: "nav2_costmap_2d::VoxelLayer"
-        enabled: True
-        publish_voxel_map: False
-        combination_method: 1
-        mark_threshold: 2
-        footprint_clearing: True
-        observation_sources: "hesai unitree"
-        hesai:
+      # ========================================================================
+      # SPATIO-TEMPORAL VOXEL LAYER (STVL)
+      # ========================================================================
+      stvl_layer:
+        plugin: "spatio_temporal_voxel_layer/SpatioTemporalVoxelLayer"
+        enabled: true
+
+        # Voxel decay parameters
+        voxel_decay: 15.0  # seconds - local costmap should decay faster
+        decay_model: 0  # 0=linear, 1=exponential, -1=persistent
+        voxel_size: 0.05  # meters - matches costmap resolution
+
+        # Space tracking
+        track_unknown_space: true
+        unknown_threshold: 15  # number of iterations before voxel is considered unknown
+        mark_threshold: 0  # minimum voxel height to be considered obstacle
+
+        # Update parameters
+        update_footprint_enabled: true
+        combination_method: 1  # 1=max, 0=override
+
+        # Obstacle range
+        origin_z: 0.0  # meters
+        publish_voxel_map: true  # Enable for visualization
+        transform_tolerance: 0.2  # seconds
+
+        # Mapping mode (disabled for navigation)
+        mapping_mode: false
+        map_save_duration: 60.0  # seconds (only used if mapping_mode=true)
+
+        # ====================================================================
+        # Observation sources - TWO sources per sensor (mark + clear)
+        # ====================================================================
+        observation_sources: "hesai_mark hesai_clear unitree_mark unitree_clear"
+
+        # Hesai LiDAR - Marking source
+        hesai_mark:
+          data_type: "PointCloud2"
           topic: /lidar_points
-          min_obstacle_height: 0.1  # Added: Filter ground points
-          max_obstacle_height: 0.7
-          clearing: True
-          marking: True
-          data_type: "PointCloud2"
-          raytrace_max_range: 3.0
-          raytrace_min_range: 0.0
-          obstacle_max_range: 2.5
-          obstacle_min_range: 0.0
-        unitree:
-          topic: /pointcloud
-          expected_update_rate: 0.5
-          min_obstacle_height: 0.1  # Added: Filter ground points
-          max_obstacle_height: 0.7
-          clearing: True
-          marking: True
-          data_type: "PointCloud2"
-          raytrace_max_range: 3.0
-          raytrace_min_range: 0.0
-          obstacle_max_range: 2.5
-          obstacle_min_range: 0.2
-          observation_persistence: 2.0
+          marking: true
+          clearing: false
+          min_obstacle_height: 0.1  # meters
+          max_obstacle_height: 0.7  # meters
+          expected_update_rate: 0.0  # 0=no timeout check
+          observation_persistence: 0.0  # 0=use latest only
+          inf_is_valid: false
+          clear_after_reading: true
+          voxel_filter: "voxel"  # Apply voxel filter to reduce CPU
+          voxel_min_points: 0  # Minimum points per voxel
 
+        # Hesai LiDAR - Clearing source (frustum acceleration)
+        hesai_clear:
+          enabled: true
+          data_type: "PointCloud2"
+          topic: /lidar_points
+          marking: false
+          clearing: true
+          min_z: 0.1  # meters
+          max_z: 7.0  # meters
+          vertical_fov_angle: 0.52  # ~30 degrees in radians (adjust for your Hesai model)
+          horizontal_fov_angle: 6.28  # 360 degrees (full rotation)
+          decay_acceleration: 5.0  # Accelerate decay in frustum (1/s^2)
+          model_type: 1  # 0=depth camera, 1=3D lidar
+          voxel_filter: "voxel"
+
+        # Unitree Go2 onboard camera - Marking source
+        unitree_mark:
+          data_type: "PointCloud2"
+          topic: /pointcloud
+          marking: true
+          clearing: false
+          min_obstacle_height: 0.1  # meters
+          max_obstacle_height: 0.7  # meters
+          expected_update_rate: 0.5  # seconds
+          observation_persistence: 2.0  # seconds - keep measurements longer
+          inf_is_valid: false
+          clear_after_reading: true
+          voxel_filter: "voxel"
+          voxel_min_points: 0
+
+        # Unitree Go2 onboard camera - Clearing source
+        unitree_clear:
+          enabled: true
+          data_type: "PointCloud2"
+          topic: /pointcloud
+          marking: false
+          clearing: true
+          min_z: 0.1  # meters
+          max_z: 3.0  # meters - shorter range for camera
+          vertical_fov_angle: 0.7  # ~40 degrees vertical FOV (adjust for Go2 camera)
+          horizontal_fov_angle: 1.04  # ~60 degrees horizontal FOV
+          decay_acceleration: 3.0  # Moderate acceleration for camera
+          model_type: 0  # 0=depth camera, 1=3D lidar
+          voxel_filter: "voxel"
+
+      # Inflation layer
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
-        cost_scaling_factor: 2.0
-        inflation_radius: 0.2
+        cost_scaling_factor: 3.0
+        inflation_radius: 0.25
 
+# ============================================================================
+# GLOBAL COSTMAP with SPATIO-TEMPORAL VOXEL LAYER
+# ============================================================================
 global_costmap:
   global_costmap:
     ros__parameters:
@@ -208,80 +460,131 @@ global_costmap:
       robot_base_frame: base_link
       use_sim_time: False
       resolution: 0.05
-      track_unknown_space: True
-      # unknown_cost_value: 200
+      track_unknown_space: true
       static_map: True
       width: 500
       height: 500
-      origin_x: -250.0 
+      origin_x: -250.0
       origin_y: -250.0
       footprint: "[ [0.360, 0.200], [0.360, -0.200], [-0.450, -0.200], [-0.450, 0.200] ]"
-      plugins: ["static_layer", "voxel_layer", "denoise_layer", "inflation_layer"]
+
+      # STVL with denoise layer
+      plugins: ["static_layer", "stvl_layer", "denoise_layer", "inflation_layer"]
 
       static_layer:
         plugin: "nav2_costmap_2d::StaticLayer"
         map_subscribe_transient_local: True
         footprint_clearing: True
 
-      voxel_layer:
-        plugin: "nav2_costmap_2d::VoxelLayer"
-        enabled: True
-        publish_voxel_map: True
-        combination_method: 1
-        mark_threshold: 2
-        footprint_clearing: True
-        observation_sources: "hesai unitree"
-        hesai:
-          topic: /lidar_points
-          min_obstacle_height: 0.1  # Added: Filter ground points
-          max_obstacle_height: 0.7
-          clearing: True
-          marking: True
-          data_type: "PointCloud2"
-          raytrace_max_range: 6.0
-          raytrace_min_range: 0.0
-          obstacle_max_range: 5.0
-          obstacle_min_range: 0.0
-        unitree:
-          topic: /pointcloud
-          expected_update_rate: 0.5
-          min_obstacle_height: 0.1  # Added: Filter ground points
-          max_obstacle_height: 0.7
-          clearing: True
-          marking: True
-          data_type: "PointCloud2"
-          raytrace_max_range: 6.0
-          raytrace_min_range: 0.0
-          obstacle_max_range: 5.0
-          obstacle_min_range: 0.2
-          observation_persistence: 2.0
+      # ========================================================================
+      # SPATIO-TEMPORAL VOXEL LAYER (STVL) for Global Costmap
+      # ========================================================================
+      stvl_layer:
+        plugin: "spatio_temporal_voxel_layer/SpatioTemporalVoxelLayer"
+        enabled: true
 
+        # Voxel decay parameters - longer for global map
+        voxel_decay: 30.0  # seconds - global should remember longer
+        decay_model: 0  # 0=linear, 1=exponential, -1=persistent (use -1 for permanent)
+        voxel_size: 0.05  # meters
+
+        # Space tracking
+        track_unknown_space: true
+        unknown_threshold: 15
+        mark_threshold: 0
+
+        # Update parameters
+        update_footprint_enabled: true
+        combination_method: 1
+
+        # Obstacle range
+        origin_z: 0.0
+        publish_voxel_map: true
+        transform_tolerance: 0.2
+
+        # Mapping mode
+        mapping_mode: false
+        map_save_duration: 60.0
+
+        # Observation sources
+        observation_sources: "hesai_mark hesai_clear unitree_mark unitree_clear"
+
+        # Hesai LiDAR - Marking
+        hesai_mark:
+          data_type: "PointCloud2"
+          topic: /lidar_points
+          marking: true
+          clearing: false
+          min_obstacle_height: 0.1
+          max_obstacle_height: 0.7
+          expected_update_rate: 0.0
+          observation_persistence: 0.0
+          inf_is_valid: false
+          clear_after_reading: true
+          voxel_filter: "voxel"
+          voxel_min_points: 0
+
+        # Hesai LiDAR - Clearing
+        hesai_clear:
+          enabled: true
+          data_type: "PointCloud2"
+          topic: /lidar_points
+          marking: false
+          clearing: true
+          min_z: 0.1
+          max_z: 10.0  # Longer range for global
+          vertical_fov_angle: 0.52
+          horizontal_fov_angle: 6.28
+          decay_acceleration: 3.0  # Slower decay for global
+          model_type: 1  # 3D lidar
+          voxel_filter: "voxel"
+
+        # Unitree camera - Marking
+        unitree_mark:
+          data_type: "PointCloud2"
+          topic: /pointcloud
+          marking: true
+          clearing: false
+          min_obstacle_height: 0.1
+          max_obstacle_height: 0.7
+          expected_update_rate: 0.5
+          observation_persistence: 2.0
+          inf_is_valid: false
+          clear_after_reading: true
+          voxel_filter: "voxel"
+          voxel_min_points: 0
+
+        # Unitree camera - Clearing
+        unitree_clear:
+          enabled: true
+          data_type: "PointCloud2"
+          topic: /pointcloud
+          marking: false
+          clearing: true
+          min_z: 0.1
+          max_z: 5.0  # Medium range for global
+          vertical_fov_angle: 0.7
+          horizontal_fov_angle: 1.04
+          decay_acceleration: 2.0
+          model_type: 0  # Depth camera
+          voxel_filter: "voxel"
+
+      # Denoise layer
       denoise_layer:
         plugin: "nav2_costmap_2d::DenoiseLayer"
         enabled: True
         minimal_group_size: 2
         group_connectivity_type: 8
 
+      # Inflation layer
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
-        cost_scaling_factor: 2.0
-        inflation_radius: 0.2
+        cost_scaling_factor: 3.0
+        inflation_radius: 0.25
 
-map_server:
-  ros__parameters:
-    use_sim_time: False
-    # Overridden in launch by the "map" launch configuration or provided default value.
-    # To use in yaml, remove the default "map" value in the tb3_simulation_launch.py file & provide full path to map below.
-    yaml_filename: ""
-
-map_saver:
-  ros__parameters:
-    use_sim_time: False
-    save_map_timeout: 5.0
-    free_thresh_default: 0.25
-    occupied_thresh_default: 0.65
-    map_subscribe_transient_local: True
-
+# ============================================================================
+# PLANNER SERVER - Smac Hybrid A* with tightened tolerance
+# ============================================================================
 planner_server:
   ros__parameters:
     planner_plugins: ["GridBased"]
@@ -289,42 +592,47 @@ planner_server:
 
     GridBased:
       plugin: "nav2_smac_planner/SmacPlannerHybrid"
-      tolerance: 3.0                            # tolerance for planning if unable to reach exact pose, in meters
-      downsample_costmap: false                 # whether or not to downsample the map
-      downsampling_factor: 1                    # multiplier for the resolution of the costmap layer (e.g. 2 on a 5cm costmap would be 10cm)
-      allow_unknown: false                      # allow traveling in unknown space
-      max_iterations: 1000000                   # maximum total iterations to search for before failing (in case unreachable), set to -1 to disable
-      max_on_approach_iterations: 1000          # maximum number of iterations to attempt to reach goal once in tolerance
-      max_planning_time: 3.5                    # max time in s for planner to plan, smooth, and upsample. Will scale maximum smoothing and upsampling times based on remaining time after planning.
-      motion_model_for_search: "REEDS_SHEPP"    # For Hybrid Dubin, Redds-Shepp
-      cost_travel_multiplier: 2.0               # For 2D: Cost multiplier to apply to search to steer away from high cost areas. Larger values will place in the center of aisles more exactly (if non-`FREE` cost potential field exists) but take slightly longer to compute. To optimize for speed, a value of 1.0 is reasonable. A reasonable tradeoff value is 2.0. A value of 0.0 effective disables steering away from obstacles and acts like a naive binary search A*.
-      angle_quantization_bins: 64               # For Hybrid nodes: Number of angle bins for search, must be 1 for 2D node (no angle search)
-      analytic_expansion_ratio: 3.5             # For Hybrid/Lattice nodes: The ratio to attempt analytic expansions during search for final approach.
-      analytic_expansion_max_length: 3.0        # For Hybrid/Lattice nodes: The maximum length of the analytic expansion to be considered valid to prevent unsafe shortcutting (in meters). This should be scaled with minimum turning radius and be no less than 4-5x the minimum radius
-      minimum_turning_radius: 0.30              # For Hybrid/Lattice nodes: minimum turning radius in m of path / vehicle
-      reverse_penalty: 2.1                      # For Reeds-Shepp model: penalty to apply if motion is reversing, must be => 1
-      change_penalty: 0.0                       # For Hybrid nodes: penalty to apply if motion is changing directions, must be >= 0
-      non_straight_penalty: 1.20                # For Hybrid nodes: penalty to apply if motion is non-straight, must be => 1
-      cost_penalty: 1.5                         # For Hybrid nodes: penalty to apply to higher cost areas when adding into the obstacle map dynamic programming distance expansion heuristic. This drives the robot more towards the center of passages. A value between 1.3 - 3.5 is reasonable.
-      retrospective_penalty: 0.025              # For Hybrid/Lattice nodes: penalty to prefer later maneuvers before earlier along the path. Saves search time since earlier nodes are not expanded until it is necessary. Must be >= 0.0 and <= 1.0
-      rotation_penalty: 4.0                     # For Lattice node: Penalty to apply only to pure rotate in place commands when using minimum control sets containing rotate in place primitives. This should always be set sufficiently high to weight against this action unless strictly necessary for obstacle avoidance or there may be frequent discontinuities in the plan where it requests the robot to rotate in place to short-cut an otherwise smooth path for marginal path distance savings.
-      lookup_table_size: 20.0                   # For Hybrid nodes: Size of the dubin/reeds-sheep distance window to cache, in meters.
-      cache_obstacle_heuristic: True            # For Hybrid nodes: Cache the obstacle map dynamic programming distance expansion heuristic between subsiquent replannings of the same goal location. Dramatically speeds up replanning performance (40x) if costmap is largely static.  
-      allow_reverse_expansion: False            # For Lattice nodes: Whether to expand state lattice graph in forward primitives or reverse as well, will double the branching factor at each step.   
-      smooth_path: True                         # For Lattice/Hybrid nodes: Whether or not to smooth the path, always true for 2D nodes.
+      tolerance: 0.5
+      downsample_costmap: false
+      downsampling_factor: 1
+      allow_unknown: false
+      max_iterations: 1000000
+      max_on_approach_iterations: 1000
+      max_planning_time: 3.5
+      motion_model_for_search: "REEDS_SHEPP"
+      cost_travel_multiplier: 2.0
+      angle_quantization_bins: 64
+      analytic_expansion_ratio: 3.5
+      analytic_expansion_max_length: 3.0
+      minimum_turning_radius: 0.30
+      reverse_penalty: 2.1
+      change_penalty: 0.0
+      non_straight_penalty: 1.20
+      cost_penalty: 1.5
+      retrospective_penalty: 0.025
+      rotation_penalty: 4.0
+      lookup_table_size: 20.0
+      cache_obstacle_heuristic: True
+      allow_reverse_expansion: False
+      smooth_path: True
+
       smoother:
         max_iterations: 1000
         w_smooth: 0.3
         w_data: 0.2
         tolerance: 1.0e-10
-        do_refinement: true                     # Whether to recursively run the smoother 3 times on the results from prior runs to refine the results further
-    
+        do_refinement: true
+
+# ============================================================================
+# BEHAVIOR SERVER
+# ============================================================================
 behavior_server:
   ros__parameters:
     costmap_topic: local_costmap/costmap_raw
     footprint_topic: local_costmap/published_footprint
     cycle_frequency: 10.0
     behavior_plugins: ["spin", "backup", "drive_on_heading", "assisted_teleop", "wait"]
+
     spin:
       plugin: "nav2_behaviors/Spin"
     backup:
@@ -335,14 +643,31 @@ behavior_server:
       plugin: "nav2_behaviors/Wait"
     assisted_teleop:
       plugin: "nav2_behaviors/AssistedTeleop"
+
     global_frame: odom
     robot_base_frame: base_link
     transform_tolerance: 0.1
     use_sim_time: False
     simulate_ahead_time: 2.0
-    max_rotational_vel: 1.0
+    max_rotational_vel: 1.5
     min_rotational_vel: 0.4
     rotational_acc_lim: 3.2
+
+# ============================================================================
+# REMAINING SERVICES
+# ============================================================================
+map_server:
+  ros__parameters:
+    use_sim_time: False
+    yaml_filename: ""
+
+map_saver:
+  ros__parameters:
+    use_sim_time: False
+    save_map_timeout: 5.0
+    free_thresh_default: 0.25
+    occupied_thresh_default: 0.65
+    map_subscribe_transient_local: True
 
 robot_state_publisher:
   ros__parameters:
@@ -354,6 +679,7 @@ waypoint_follower:
     loop_rate: 20
     stop_on_failure: false
     waypoint_task_executor_plugin: "wait_at_waypoint"
+
     wait_at_waypoint:
       plugin: "nav2_waypoint_follower::WaitAtWaypoint"
       enabled: True
