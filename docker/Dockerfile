@@ -12,6 +12,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libgl1-mesa-dri \
     libboost-all-dev \
     libyaml-cpp-dev \
+    libjemalloc2 \
     ros-humble-rviz2 \
     software-properties-common \
     ros-humble-rmw-cyclonedds-cpp \
@@ -59,8 +60,7 @@ RUN . /opt/ros/${ROS_DISTRO}/setup.sh && \
 RUN echo "source /opt/ros/${ROS_DISTRO}/setup.bash" >> /root/.bashrc && \
     echo "source /ros2_ws/install/setup.bash" >> /root/.bashrc
     
-# Ensure jemalloc memory allocator workaround is active
-ENV LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libjemalloc.so.2
+
 
 # Set default command
 CMD ["bash"]
