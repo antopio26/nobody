@@ -23,6 +23,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ros-humble-navigation2 \
     ros-humble-nav2-bringup \
     ros-humble-spatio-temporal-voxel-layer \
+    ros-humble-vision-msgs \
+    ros-humble-cv-bridge \
     python3-vcstool \
     git \
     ffmpeg \
