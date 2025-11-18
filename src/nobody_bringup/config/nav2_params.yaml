@@ -338,8 +338,8 @@ local_costmap:
       rolling_window: true
       width: 6
       height: 6
-      resolution: 0.05
-      track_unknown_space: true  # STVL supports unknown space tracking
+      resolution: 0.01
+      # track_unknown_space: true  # STVL supports unknown space tracking
       always_send_full_costmap: True
       footprint: "[ [0.360, 0.200], [0.360, -0.200], [-0.450, -0.200], [-0.450, 0.200] ]"
 
@@ -356,11 +356,11 @@ local_costmap:
         # Voxel decay parameters
         voxel_decay: 15.0  # seconds - local costmap should decay faster
         decay_model: 0  # 0=linear, 1=exponential, -1=persistent
-        voxel_size: 0.05  # meters - matches costmap resolution
+        voxel_size: 0.01  # meters - matches costmap resolution
 
         # Space tracking
-        track_unknown_space: true
-        unknown_threshold: 15  # number of iterations before voxel is considered unknown
+        # track_unknown_space: true
+        # unknown_threshold: 15  # number of iterations before voxel is considered unknown
         mark_threshold: 0  # minimum voxel height to be considered obstacle
 
         # Update parameters
@@ -387,8 +387,8 @@ local_costmap:
           topic: /lidar_points
           marking: true
           clearing: false
-          min_obstacle_height: 0.1  # meters
-          max_obstacle_height: 0.7  # meters
+          min_obstacle_height: 0.15 # meters
+          max_obstacle_height: 0.9  # meters
           expected_update_rate: 0.0  # 0=no timeout check
           observation_persistence: 0.0  # 0=use latest only
           inf_is_valid: false
@@ -405,7 +405,7 @@ local_costmap:
           clearing: true
           min_z: 0.1  # meters
           max_z: 7.0  # meters
-          vertical_fov_angle: 0.52  # ~30 degrees in radians (adjust for your Hesai model)
+          vertical_fov_angle: 1.57  # ~90 degrees in radians (adjust for your Hesai model)
           horizontal_fov_angle: 6.28  # 360 degrees (full rotation)
           decay_acceleration: 5.0  # Accelerate decay in frustum (1/s^2)
           model_type: 1  # 0=depth camera, 1=3D lidar
@@ -417,8 +417,8 @@ local_costmap:
           topic: /pointcloud
           marking: true
           clearing: false
-          min_obstacle_height: 0.1  # meters
-          max_obstacle_height: 0.7  # meters
+          min_obstacle_height: 0.15 # meters
+          max_obstacle_height: 0.9  # meters
           expected_update_rate: 0.5  # seconds
           observation_persistence: 2.0  # seconds - keep measurements longer
           inf_is_valid: false
@@ -435,17 +435,17 @@ local_costmap:
           clearing: true
           min_z: 0.1  # meters
           max_z: 3.0  # meters - shorter range for camera
-          vertical_fov_angle: 0.7  # ~40 degrees vertical FOV (adjust for Go2 camera)
-          horizontal_fov_angle: 1.04  # ~60 degrees horizontal FOV
+          vertical_fov_angle: 1.57  # ~90 degrees vertical FOV (adjust for Go2 camera)
+          horizontal_fov_angle: 6.28   # ~360 degrees horizontal FOV
           decay_acceleration: 3.0  # Moderate acceleration for camera
-          model_type: 0  # 0=depth camera, 1=3D lidar
+          model_type: 1  # 0=depth camera, 1=3D lidar
           voxel_filter: "voxel"
 
       # Inflation layer
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
         cost_scaling_factor: 3.0
-        inflation_radius: 0.25
+        inflation_radius: 0.20
 
 # ============================================================================
 # GLOBAL COSTMAP with SPATIO-TEMPORAL VOXEL LAYER
@@ -460,7 +460,7 @@ global_costmap:
       robot_base_frame: base_link
       use_sim_time: False
       resolution: 0.05
-      track_unknown_space: true
+      # track_unknown_space: true
       static_map: True
       width: 500
       height: 500
@@ -489,8 +489,8 @@ global_costmap:
         voxel_size: 0.05  # meters
 
         # Space tracking
-        track_unknown_space: true
-        unknown_threshold: 15
+        # track_unknown_space: true
+        # unknown_threshold: 15
         mark_threshold: 0
 
         # Update parameters
@@ -515,8 +515,8 @@ global_costmap:
           topic: /lidar_points
           marking: true
           clearing: false
-          min_obstacle_height: 0.1
-          max_obstacle_height: 0.7
+          min_obstacle_height: 0.15
+          max_obstacle_height: 0.9
           expected_update_rate: 0.0
           observation_persistence: 0.0
           inf_is_valid: false
@@ -533,8 +533,8 @@ global_costmap:
           clearing: true
           min_z: 0.1
           max_z: 10.0  # Longer range for global
-          vertical_fov_angle: 0.52
-          horizontal_fov_angle: 6.28
+          vertical_fov_angle: 1.57  # ~90 degrees vertical FOV (adjust for Go2 camera)
+          horizontal_fov_angle: 6.28   # ~360 degrees horizontal FOV
           decay_acceleration: 3.0  # Slower decay for global
           model_type: 1  # 3D lidar
           voxel_filter: "voxel"
@@ -545,8 +545,8 @@ global_costmap:
           topic: /pointcloud
           marking: true
           clearing: false
-          min_obstacle_height: 0.1
-          max_obstacle_height: 0.7
+          min_obstacle_height: 0.15
+          max_obstacle_height: 0.9
           expected_update_rate: 0.5
           observation_persistence: 2.0
           inf_is_valid: false
@@ -563,8 +563,8 @@ global_costmap:
           clearing: true
           min_z: 0.1
           max_z: 5.0  # Medium range for global
-          vertical_fov_angle: 0.7
-          horizontal_fov_angle: 1.04
+          vertical_fov_angle: 1.57  # ~90 degrees vertical FOV (adjust for Go2 camera)
+          horizontal_fov_angle: 6.28   # ~360 degrees horizontal FOV
           decay_acceleration: 2.0
           model_type: 0  # Depth camera
           voxel_filter: "voxel"
@@ -580,7 +580,7 @@ global_costmap:
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
         cost_scaling_factor: 3.0
-        inflation_radius: 0.25
+        inflation_radius: 0.20
 
 # ============================================================================
 # PLANNER SERVER - Smac Hybrid A* with tightened tolerance

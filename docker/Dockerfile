@@ -59,8 +59,6 @@ RUN . /opt/ros/${ROS_DISTRO}/setup.sh && \
 # Source ROS2 and workspace in bashrc
 RUN echo "source /opt/ros/${ROS_DISTRO}/setup.bash" >> /root/.bashrc && \
     echo "source /ros2_ws/install/setup.bash" >> /root/.bashrc
-    
-
 
 # Set default command
 CMD ["bash"]
