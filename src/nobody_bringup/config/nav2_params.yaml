@@ -330,8 +330,8 @@ controller_server:
 local_costmap:
   local_costmap:
     ros__parameters:
-      update_frequency: 10.0  # CHANGED: 10.0 -> 15.0 Hz
-      publish_frequency: 8.0  # CHANGED: 5.0 -> 10.0 Hz
+      update_frequency: 5.0  # CHANGED: 10.0 -> 15.0 Hz
+      publish_frequency: 5.0  # CHANGED: 5.0 -> 10.0 Hz
       global_frame: odom
       robot_base_frame: base_link
       use_sim_time: False
@@ -387,6 +387,7 @@ local_costmap:
           topic: /lidar_points
           marking: true
           clearing: false
+          min_z: 1.0
           min_obstacle_height: 0.15 # meters
           max_obstacle_height: 0.9  # meters
           expected_update_rate: 0.5  # CHANGED: 0.2 -> 0.5s tolerance (was too strict)
@@ -460,7 +461,7 @@ global_costmap:
       robot_base_frame: base_link
       use_sim_time: False
       resolution: 0.05
-      track_unknown_space: true
+      # track_unknown_space: true
       static_map: True
       width: 500
       height: 500
@@ -489,7 +490,7 @@ global_costmap:
         voxel_size: 0.05  # meters
 
         # Space tracking
-        track_unknown_space: true
+        # track_unknown_space: true
         # unknown_threshold: 15
         mark_threshold: 0
 
@@ -515,6 +516,7 @@ global_costmap:
           topic: /lidar_points
           marking: true
           clearing: false
+          min_z: 1.0
           min_obstacle_height: 0.15
           max_obstacle_height: 0.9
           expected_update_rate: 0.5  # CHANGED: 0.0 -> 0.5s (same as local)

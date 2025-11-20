@@ -55,7 +55,7 @@ def generate_launch_description():
         package='hesai_ros_driver',
         executable='hesai_ros_driver_node',
         condition=IfCondition(PythonExpression([lidar])),
-        output='screen'
+        # output='screen'
     )
 
     realsense_cmd = IncludeLaunchDescription(

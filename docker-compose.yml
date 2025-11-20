@@ -1,4 +1,14 @@
 services:
+  ptp_master:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.ptp
+    network_mode: "host"
+    privileged: true
+    restart: unless-stopped
+    command: >
+      ptp4l -i eth0 -S -m
+
   unitree_ros:
     build:
       context: .
