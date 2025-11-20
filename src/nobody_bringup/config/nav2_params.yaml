@@ -393,7 +393,7 @@ local_costmap:
           observation_persistence: 0.0  # 0=use latest only
           inf_is_valid: false
           clear_after_reading: true
-          voxel_filter: "voxel"  # Apply voxel filter to reduce CPU
+          # voxel_filter: "voxel"  # Apply voxel filter to reduce CPU
           voxel_min_points: 0  # Minimum points per voxel
 
         # Hesai LiDAR - Clearing source (frustum acceleration)
@@ -409,7 +409,7 @@ local_costmap:
           horizontal_fov_angle: 6.28  # 360 degrees (full rotation)
           decay_acceleration: 5.0  # Accelerate decay in frustum (1/s^2)
           model_type: 1  # 0=depth camera, 1=3D lidar
-          voxel_filter: "voxel"
+          # voxel_filter: "voxel"
 
         # Unitree Go2 onboard lidar - Marking source
         unitree_mark:
@@ -521,7 +521,7 @@ global_costmap:
           observation_persistence: 0.0
           inf_is_valid: false
           clear_after_reading: true
-          voxel_filter: "voxel"
+          # voxel_filter: "voxel"
           voxel_min_points: 0
 
         # Hesai LiDAR - Clearing
@@ -537,7 +537,7 @@ global_costmap:
           horizontal_fov_angle: 6.28   # ~360 degrees horizontal FOV
           decay_acceleration: 3.0  # Slower decay for global
           model_type: 1  # 3D lidar
-          voxel_filter: "voxel"
+          # voxel_filter: "voxel"
 
         # Unitree lidar - Marking
         unitree_mark:
@@ -579,7 +579,7 @@ global_costmap:
       # Inflation layer
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
-        cost_scaling_factor: 1.0
+        cost_scaling_factor: 4.0
         inflation_radius: 0.25
 
 # ============================================================================

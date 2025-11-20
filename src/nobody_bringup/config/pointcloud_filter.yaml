@@ -30,4 +30,4 @@ pointcloud_hesai_filter_node:
     min_height: -0.7
     max_height: 0.5
     enable_radius_filter: true
-    max_radius: 8.0
+    max_radius: 5.0
