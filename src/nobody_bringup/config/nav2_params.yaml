@@ -424,7 +424,7 @@ local_costmap:
           observation_persistence: 2.0  # seconds - keep measurements longer
           inf_is_valid: false
           clear_after_reading: true
-          voxel_filter: "voxel"
+          # voxel_filter: "voxel"
           voxel_min_points: 0
 
         # Unitree Go2 onboard lidar - Clearing source
@@ -440,7 +440,7 @@ local_costmap:
           horizontal_fov_angle: 6.28   # ~360 degrees horizontal FOV
           decay_acceleration: 3.0  # Moderate acceleration for camera
           model_type: 1  # 0=depth camera, 1=3D lidar
-          voxel_filter: "voxel"
+          # voxel_filter: "voxel"
 
       # Inflation layer
       inflation_layer:
@@ -553,7 +553,7 @@ global_costmap:
           observation_persistence: 2.0
           inf_is_valid: false
           clear_after_reading: true
-          voxel_filter: "voxel"
+          # voxel_filter: "voxel"
           voxel_min_points: 0
 
         # Unitree lidar - Clearing
@@ -569,7 +569,7 @@ global_costmap:
           horizontal_fov_angle: 6.28   # ~360 degrees horizontal FOV
           decay_acceleration: 2.0
           model_type: 0  # Depth camera
-          voxel_filter: "voxel"
+          # voxel_filter: "voxel"
 
       # Denoise layer
       denoise_layer:
