@@ -86,6 +86,6 @@ def generate_launch_description():
         launch_slam_arg,
         launch_nav2_arg,
         go2_bringup_launch,
-        # pointcloud_filter_node,
+        pointcloud_filter_node,
         navigation_mapping_launch,
     ])

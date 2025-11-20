@@ -330,15 +330,15 @@ controller_server:
 local_costmap:
   local_costmap:
     ros__parameters:
-      update_frequency: 15.0  # CHANGED: 10.0 -> 15.0 Hz
-      publish_frequency: 10.0  # CHANGED: 5.0 -> 10.0 Hz
+      update_frequency: 10.0  # CHANGED: 10.0 -> 15.0 Hz
+      publish_frequency: 8.0  # CHANGED: 5.0 -> 10.0 Hz
       global_frame: odom
       robot_base_frame: base_link
       use_sim_time: False
       rolling_window: true
       width: 6
       height: 6
-      resolution: 0.01
+      resolution: 0.05
       # track_unknown_space: true  # STVL supports unknown space tracking
       always_send_full_costmap: True
       footprint: "[ [0.360, 0.200], [0.360, -0.200], [-0.450, -0.200], [-0.450, 0.200] ]"
@@ -356,7 +356,7 @@ local_costmap:
         # Voxel decay parameters
         voxel_decay: 15.0  # seconds - local costmap should decay faster
         decay_model: 0  # 0=linear, 1=exponential, -1=persistent
-        voxel_size: 0.01  # meters - matches costmap resolution
+        voxel_size: 0.05  # meters - matches costmap resolution
 
         # Space tracking
         # track_unknown_space: true
@@ -414,7 +414,7 @@ local_costmap:
         # Unitree Go2 onboard camera - Marking source
         unitree_mark:
           data_type: "PointCloud2"
-          topic: /pointcloud
+          topic: /filtered_pointcloud
           marking: true
           clearing: false
           min_obstacle_height: 0.15 # meters
@@ -430,7 +430,7 @@ local_costmap:
         unitree_clear:
           enabled: true
           data_type: "PointCloud2"
-          topic: /pointcloud
+          topic: /filtered_pointcloud
           marking: false
           clearing: true
           min_z: 0.1  # meters
@@ -444,8 +444,8 @@ local_costmap:
       # Inflation layer
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
-        cost_scaling_factor: 3.0
-        inflation_radius: 0.20
+        cost_scaling_factor: 2.0
+        inflation_radius: 0.30
 
 # ============================================================================
 # GLOBAL COSTMAP with SPATIO-TEMPORAL VOXEL LAYER
@@ -542,7 +542,7 @@ global_costmap:
         # Unitree camera - Marking
         unitree_mark:
           data_type: "PointCloud2"
-          topic: /pointcloud
+          topic: /filtered_pointcloud
           marking: true
           clearing: false
           min_obstacle_height: 0.15
@@ -558,7 +558,7 @@ global_costmap:
         unitree_clear:
           enabled: true
           data_type: "PointCloud2"
-          topic: /pointcloud
+          topic: /filtered_pointcloud
           marking: false
           clearing: true
           min_z: 0.1
@@ -579,8 +579,8 @@ global_costmap:
       # Inflation layer
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
-        cost_scaling_factor: 3.0
-        inflation_radius: 0.20
+        cost_scaling_factor: 2.0
+        inflation_radius: 0.30
 
 # ============================================================================
 # PLANNER SERVER - Smac Hybrid A* with tightened tolerance

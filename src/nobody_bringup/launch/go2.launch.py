@@ -108,17 +108,6 @@ def generate_launch_description():
         output='screen',
     )
 
-    # robot_body_filter_node = Node(
-    #     package='robot_self_filter',         
-    #     executable='robot_self_filter_node',
-    #     name='robot_self_filter',           
-    #     parameters=[robot_self_filter_config_file],
-    #     remappings=[
-    #         ('cloud_in', '/pointcloud'), 
-    #         ('cloud_out', '/points_filtered')   
-    #     ]
-    # )
-
 
     ld = LaunchDescription()
     ld.add_action(declare_lidar_cmd)

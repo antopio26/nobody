@@ -66,7 +66,7 @@ lidar:
       fov_start: -1
       fov_end:  -1
       channel_fov_filter_path: "Your channel fov filter file path"  # The path of channel_fov_filter file, like channel 0 filter [10, 20] and [30,40]
-      multi_fov_filter_ranges: "" # compare to channel_fov_filter_path, multi_fov_filter_ranges for all channels. example config "[20,30];[40,200]"
+      multi_fov_filter_ranges: "[0.5,10.0]" # compare to channel_fov_filter_path, multi_fov_filter_ranges for all channels. example config "[20,30];[40,200]"
       # other config
       enable_packet_loss_tool: true         # enable the udp packet loss detection tool
       distance_correction_flag: false       # set to true when optical centre correction needs to be turned on

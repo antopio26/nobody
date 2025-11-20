@@ -3,9 +3,9 @@ pointcloud_filter_node:
     input_topic: '/pointcloud'
     output_topic: '/filtered_pointcloud'
     filter_type: 'bounding_box'
-    bounding_box_frame: 'base_link'
     # Remove points inside this box (robot body filtering)
+    # Bounding box is assumed to be in the same frame as the point cloud
     # Format: [x_min, y_min, z_min]
-    bounding_box_min: [-0.450, -0.200, 0.0]
+    bounding_box_min: [0.0, -0.400, -0.5]
     # Format: [x_max, y_max, z_max]
-    bounding_box_max: [0.360, 0.200, 0.8]
+    bounding_box_max: [1.5, 0.400, 0.8]
