@@ -1,11 +1,36 @@
-pointcloud_filter_node:
+pointcloud_unitree_filter_node:
   ros__parameters:
     input_topic: '/pointcloud'
     output_topic: '/filtered_pointcloud'
-    filter_type: 'bounding_box'
     # Remove points inside this box (robot body filtering)
     # Bounding box is assumed to be in the same frame as the point cloud
     # Format: [x_min, y_min, z_min]
     bounding_box_min: [0.0, -0.400, -0.5]
     # Format: [x_max, y_max, z_max]
     bounding_box_max: [1.5, 0.400, 0.8]
+    # Height and radius cutoff filtering
+    enable_height_filter: true
+    min_height: -0.7
+    max_height: 0.5
+    enable_radius_filter: true
+    max_radius: 8.0
+
+pointcloud_hesai_filter_node:
+  ros__parameters:
+    input_topic: '/lidar_points'
+    output_topic: '/filtered_lidar_points'
+    # Remove points inside this box (robot body filtering)
+    # Bounding box is assumed to be in the same frame as the point cloud
+    # Format: [x_min, y_min, z_min]
+    bounding_box_min: [-0.5, -0.5, -1.0]
+    # Format: [x_max, y_max, z_max]
+    bounding_box_max: [0.5, 0.8, 0.5]
+    # Voxel filtering parameters
+    enable_downsampling: true
+    voxel_size: 0.05
+    # Height and radius cutoff filtering
+    enable_height_filter: true
+    min_height: -0.7
+    max_height: 0.5
+    enable_radius_filter: true
+    max_radius: 8.0

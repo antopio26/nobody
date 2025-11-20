@@ -52,13 +52,6 @@ def generate_launch_description():
         'pointcloud_filter.yaml'
     )
 
-    # Path to the hesai pointcloud filter config file
-    pointcloud_hesai_filter_config_file = os.path.join(
-        get_package_share_directory('nobody_bringup'),
-        'config',
-        'hesai_pointcloud_filter.yaml'
-    )
-
     # Include the go2_bringup launch file with specified arguments
     go2_bringup_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(go2_bringup_launch_file),
@@ -80,10 +73,10 @@ def generate_launch_description():
     )
 
     # Pointcloud filter node
-    pointcloud_filter_node = Node(
+    pointcloud_unitree_filter_node = Node(
         package='nobody_bringup',
         executable='pointcloud_filter_node.py',
-        name='pointcloud_filter_node',
+        name='pointcloud_unitree_filter_node',
         parameters=[pointcloud_filter_config_file],
         output='screen'
     )
@@ -93,7 +86,7 @@ def generate_launch_description():
         package='nobody_bringup',
         executable='pointcloud_filter_node.py',
         name='pointcloud_hesai_filter_node',
-        parameters=[pointcloud_hesai_filter_config_file],
+        parameters=[pointcloud_filter_config_file],
         output='screen'
     )
 
@@ -102,7 +95,7 @@ def generate_launch_description():
         launch_slam_arg,
         launch_nav2_arg,
         go2_bringup_launch,
-        pointcloud_filter_node,
+        pointcloud_unitree_filter_node,
         pointcloud_hesai_filter_node,
         navigation_mapping_launch,
     ])

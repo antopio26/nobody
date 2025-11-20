@@ -32,7 +32,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Install specific numpy version
-RUN pip install 'numpy<2.0.0'
+RUN pip install 'numpy<2.0.0' open3d scipy
 
 # Create workspace
 WORKDIR /ros2_ws

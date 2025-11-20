@@ -387,11 +387,10 @@ local_costmap:
           topic: /filtered_lidar_points
           marking: true
           clearing: false
-          min_z: 1.0
           min_obstacle_height: 0.15 # meters
           max_obstacle_height: 0.9  # meters
           expected_update_rate: 0.5  # CHANGED: 0.2 -> 0.5s tolerance (was too strict)
-          observation_persistence: 0.5  # 0=use latest only
+          observation_persistence: 0.0  # 0=use latest only
           inf_is_valid: false
           clear_after_reading: true
           voxel_filter: "voxel"  # Apply voxel filter to reduce CPU
@@ -516,7 +515,6 @@ global_costmap:
           topic: /filtered_lidar_points
           marking: true
           clearing: false
-          min_z: 1.0
           min_obstacle_height: 0.15
           max_obstacle_height: 0.9
           expected_update_rate: 0.5  # CHANGED: 0.0 -> 0.5s (same as local) 
