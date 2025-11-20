@@ -384,7 +384,7 @@ local_costmap:
         # Hesai LiDAR - Marking source
         hesai_mark:
           data_type: "PointCloud2"
-          topic: /lidar_points
+          topic: /filtered_lidar_points
           marking: true
           clearing: false
           min_z: 1.0
@@ -401,7 +401,7 @@ local_costmap:
         hesai_clear:
           enabled: true
           data_type: "PointCloud2"
-          topic: /lidar_points
+          topic: /filtered_lidar_points
           marking: false
           clearing: true
           min_z: 0.1  # meters
@@ -513,13 +513,13 @@ global_costmap:
         # Hesai LiDAR - Marking
         hesai_mark:
           data_type: "PointCloud2"
-          topic: /lidar_points
+          topic: /filtered_lidar_points
           marking: true
           clearing: false
           min_z: 1.0
           min_obstacle_height: 0.15
           max_obstacle_height: 0.9
-          expected_update_rate: 0.5  # CHANGED: 0.0 -> 0.5s (same as local)
+          expected_update_rate: 0.5  # CHANGED: 0.0 -> 0.5s (same as local) 
           observation_persistence: 0.0
           inf_is_valid: false
           clear_after_reading: true
@@ -530,7 +530,7 @@ global_costmap:
         hesai_clear:
           enabled: true
           data_type: "PointCloud2"
-          topic: /lidar_points
+          topic: /filtered_lidar_points
           marking: false
           clearing: true
           min_z: 0.1
