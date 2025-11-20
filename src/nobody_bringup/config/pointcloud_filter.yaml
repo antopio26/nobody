@@ -8,10 +8,7 @@ pointcloud_unitree_filter_node:
     bounding_box_min: [0.0, -0.400, -0.5]
     # Format: [x_max, y_max, z_max]
     bounding_box_max: [1.5, 0.400, 0.8]
-    # Height and radius cutoff filtering
-    enable_height_filter: true
-    min_height: -0.7
-    max_height: 0.5
+    # Radius cutoff filtering
     enable_radius_filter: true
     max_radius: 8.0
 
