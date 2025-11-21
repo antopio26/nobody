@@ -25,11 +25,7 @@ RUN mkdir -p src
 
 # Clone Unitree Go2 simulation package
 RUN cd src && \
-    git clone https://github.com/anujjain-dev/unitree-go2-ros2.git && \
-    # Remap topics in source code
-    find src/unitree-go2-ros2 -type f \( -name "*.launch.py" -o -name "*.xacro" -o -name "*.urdf" \) -exec sed -i 's|/velodyne_points|/lidar_points|g' {} + && \
-    find src/unitree-go2-ros2 -type f \( -name "*.launch.py" -o -name "*.xacro" -o -name "*.urdf" \) -exec sed -i 's|/imu/data|/lidar_imu|g' {} +
-
+    git clone https://github.com/antopio26/unitree-go2-gazebo-sim.gits
 
 # Install dependencies
 RUN apt-get update && \
