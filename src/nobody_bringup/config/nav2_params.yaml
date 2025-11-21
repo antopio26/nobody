@@ -331,7 +331,7 @@ local_costmap:
   local_costmap:
     ros__parameters:
       update_frequency: 5.0  # CHANGED: 10.0 -> 15.0 Hz
-      publish_frequency: 5.0  # CHANGED: 5.0 -> 10.0 Hz
+      publish_frequency: 2.0  # CHANGED: 5.0 -> 10.0 Hz
       global_frame: odom
       robot_base_frame: base_link
       use_sim_time: False
