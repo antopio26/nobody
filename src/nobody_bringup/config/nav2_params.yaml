@@ -465,12 +465,7 @@ global_costmap:
       footprint: "[ [0.360, 0.200], [0.360, -0.200], [-0.450, -0.200], [-0.450, 0.200] ]"
 
       # STVL with denoise layer
-      plugins: ["static_layer", "stvl_layer", "denoise_layer", "inflation_layer"]
-
-      static_layer:
-        plugin: "nav2_costmap_2d::StaticLayer"
-        map_subscribe_transient_local: True
-        footprint_clearing: True
+      plugins: ["stvl_layer", "denoise_layer", "inflation_layer"]
 
       # ========================================================================
       # SPATIO-TEMPORAL VOXEL LAYER (STVL) for Global Costmap
