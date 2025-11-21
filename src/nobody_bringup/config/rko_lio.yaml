@@ -1,0 +1,22 @@
+# RKO_LIO Configuration
+
+# Required parameters
+imu_topic: "/lidar_imu"
+lidar_topic: "/lidar_points"
+base_frame: "base_link"
+
+# Optional parameters
+odom_topic: "/odom"
+odom_frame: "odom"
+invert_odom_tf: false
+
+# LIO parameters
+deskew: true
+voxel_size: 1.0
+max_points_per_voxel: 20
+max_range: 100.0
+min_range: 1.0
+
+# Mapping
+publish_local_map: true
+map_topic: "/rko_lio/local_map"

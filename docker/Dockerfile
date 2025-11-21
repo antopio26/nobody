@@ -26,6 +26,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ros-humble-spatio-temporal-voxel-layer \
     ros-humble-vision-msgs \
     ros-humble-cv-bridge \
+    ros-humble-rko-lio \
     python3-vcstool \
     git \
     ffmpeg \

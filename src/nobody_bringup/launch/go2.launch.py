@@ -72,6 +72,10 @@ def generate_launch_description():
         plugin='go2_driver::Go2Driver',
         name='go2_driver',
         namespace='',
+        remappings=[
+            ('odom', '/utlidar/odom'),
+            ('/tf', '/tf_unused'),
+        ],
 
     )
     composable_nodes.append(composable_node)
