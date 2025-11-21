@@ -452,7 +452,7 @@ global_costmap:
       update_frequency: 2.0
       publish_frequency: 1.0
       always_send_full_costmap: True
-      global_frame: odom
+      global_frame: map # odom
       robot_base_frame: base_link
       use_sim_time: False
       resolution: 0.05
