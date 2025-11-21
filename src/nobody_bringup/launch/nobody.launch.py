@@ -15,6 +15,12 @@ def generate_launch_description():
     Generates the launch description to start the Go2 robot, navigation stack, and optionally the Foxglove bridge.
     """
 
+    launch_slam_arg = DeclareLaunchArgument(
+        'slam',
+        default_value='true',
+        description='Whether to launch SLAM Toolbox'
+    )
+
     launch_nav2_arg = DeclareLaunchArgument(
         'nav2',
         default_value='true',
@@ -28,6 +34,7 @@ def generate_launch_description():
     )
 
     # Create LaunchConfiguration variables
+    launch_slam_config = LaunchConfiguration('slam')
     launch_nav2_config = LaunchConfiguration('nav2')
     launch_rko_lio_config = LaunchConfiguration('rko_lio')
 
@@ -73,6 +80,7 @@ def generate_launch_description():
     navigation_mapping_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(navigation_mapping_launch_file),
         launch_arguments={
+            'slam': launch_slam_config,
             'nav2': launch_nav2_config,
             'use_sim_time': 'false',
         }.items()
@@ -104,6 +112,7 @@ def generate_launch_description():
 
     # Create the LaunchDescription with all components
     return LaunchDescription([
+        launch_slam_arg,
         launch_nav2_arg,
         launch_rko_lio_arg,
         go2_bringup_launch,
