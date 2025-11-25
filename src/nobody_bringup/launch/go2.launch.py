@@ -113,6 +113,14 @@ def generate_launch_description():
         output='screen',
     )
 
+    static_tf_imu_cmd = Node(
+        package='tf2_ros',
+        executable='static_transform_publisher',
+        name='static_tf_imu',
+        arguments=['0', '0', '0', '0', '0', '0', 'radar', 'utlidar_imu'],
+        output='screen',
+    )
+
 
     ld = LaunchDescription()
     ld.add_action(declare_lidar_cmd)
@@ -123,5 +131,6 @@ def generate_launch_description():
     ld.add_action(driver_container)
     ld.add_action(pointcloud_to_laserscan_cmd)
     ld.add_action(static_tf_lidar_cmd)
+    ld.add_action(static_tf_imu_cmd)
 
     return ld

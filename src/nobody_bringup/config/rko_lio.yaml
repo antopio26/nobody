@@ -1,8 +1,8 @@
 # RKO_LIO Configuration
 
 # Required parameters
-imu_topic: "/lidar_imu"
-lidar_topic: "/lidar_points"
+imu_topic: "/utlidar/imu"
+lidar_topic: "/filtered_pointcloud"
 base_frame: "base_link"
 
 # Optional parameters
@@ -20,3 +20,5 @@ min_range: 1.0
 # Mapping
 publish_local_map: true
 map_topic: "/rko_lio/local_map"
+
+extrinsic_est_en: true
