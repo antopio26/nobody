@@ -2,7 +2,7 @@
 
 # Required parameters
 imu_topic: "/utlidar/imu"
-lidar_topic: "/filtered_pointcloud"
+lidar_topic: "/lidar_points"
 base_frame: "base_link"
 
 # Optional parameters

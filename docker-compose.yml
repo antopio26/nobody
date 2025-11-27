@@ -1,13 +1,13 @@
 services:
-  ptp_master:
-    build:
-      context: .
-      dockerfile: docker/Dockerfile.ptp
-    network_mode: "host"
-    privileged: true
-    restart: unless-stopped
-    command: >
-      ptp4l -i eth0 -S -m
+  # ptp_master:
+  #   build:
+  #     context: .
+  #     dockerfile: docker/Dockerfile.ptp
+  #   network_mode: "host"
+  #   privileged: true
+  #   restart: unless-stopped
+  #   command: >
+  #     ptp4l -i eth0 -S -m
 
   unitree_ros:
     build:
@@ -32,12 +32,7 @@ services:
       - /dev/input:/dev/input
     restart: unless-stopped
     command: >
-      bash -c "
-      cd /ros2_ws &&
-      colcon build --packages-select nobody_bringup hesai_ros_driver --symlink-install &&
-      source /ros2_ws/install/setup.bash &&
-      ros2 launch nobody_bringup nobody.launch.py
-      "
+      bash -c " cd /ros2_ws && colcon build --packages-select nobody_bringup hesai_ros_driver --symlink-install && source /ros2_ws/install/setup.bash && ros2 launch nobody_bringup nobody.launch.py "
 
   foxglove_bridge:
     build:
@@ -57,13 +52,10 @@ services:
     privileged: true
     restart: unless-stopped
     command: >
-      bash -c "
-      source /ros2_ws/install/setup.bash &&
-      ros2 run foxglove_bridge foxglove_bridge
-      "
+      bash -c " source /ros2_ws/install/setup.bash && ros2 run foxglove_bridge foxglove_bridge "
 
   simulation:
-    profiles: ["sim"]
+    profiles: [ "sim" ]
     build:
       context: .
       dockerfile: docker/Dockerfile.sim
@@ -78,7 +70,4 @@ services:
     pid: "host"
     privileged: true
     command: >
-      bash -c "
-      source /ros2_ws/install/setup.bash &&
-      ros2 launch go2_config gazebo_velodyne.launch.py
-      "
+      bash -c " source /ros2_ws/install/setup.bash && ros2 launch go2_config gazebo_velodyne.launch.py "
