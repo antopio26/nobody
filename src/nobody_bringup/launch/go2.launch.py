@@ -73,8 +73,8 @@ def generate_launch_description():
         name='go2_driver',
         namespace='',
         remappings=[
-            ('odom', '/utlidar/odom'),
-            ('/tf', '/tf_unused'),
+            # ('odom', '/utlidar/odom'),
+            # ('/tf', '/tf_unused'),
         ],
 
     )
@@ -117,7 +117,7 @@ def generate_launch_description():
         package='tf2_ros',
         executable='static_transform_publisher',
         name='static_tf_imu',
-        arguments=['0', '0', '0', '0', '0', '0', 'radar', 'utlidar_imu'],
+        arguments=['0', '0', '0', '0', '0', '0', 'imu', 'utlidar_imu'],
         output='screen',
     )
 

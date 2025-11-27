@@ -95,7 +95,7 @@ def generate_launch_description():
     # Pointcloud filter node
     pointcloud_unitree_filter_node = Node(
         package='nobody_bringup',
-        executable='pointcloud_filter_node.py',
+        executable='pointcloud_filter_node',
         name='pointcloud_unitree_filter_node',
         parameters=[pointcloud_filter_config_file],
         output='screen'
@@ -104,7 +104,7 @@ def generate_launch_description():
     # Pointcloud filter node
     pointcloud_hesai_filter_node = Node(
         package='nobody_bringup',
-        executable='pointcloud_filter_node.py',
+        executable='pointcloud_filter_node',
         name='pointcloud_hesai_filter_node',
         parameters=[pointcloud_filter_config_file],
         output='screen'
@@ -118,6 +118,6 @@ def generate_launch_description():
         go2_bringup_launch,
         pointcloud_unitree_filter_node,
         pointcloud_hesai_filter_node,
-        rko_lio_launch,
+        # rko_lio_launch,
         navigation_mapping_launch,
     ])
