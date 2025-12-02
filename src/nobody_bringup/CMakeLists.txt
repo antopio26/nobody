@@ -38,6 +38,7 @@ ament_target_dependencies(pointcloud_filter_node
 # Install Python executables
 install(PROGRAMS
   scripts/pointcloud_filter_node.py
+  scripts/base_footprint_publisher.py
   DESTINATION lib/${PROJECT_NAME}
 )
 

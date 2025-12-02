@@ -8,6 +8,7 @@ from launch.actions import IncludeLaunchDescription, DeclareLaunchArgument
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
 from launch.conditions import IfCondition
+from launch_ros.actions import Node
 
 def generate_launch_description():
     """
@@ -67,8 +68,17 @@ def generate_launch_description():
         condition=IfCondition(launch_nav2_config),
         launch_arguments={
             'params_file': nav2_params_file,
+            'slam': 'false',
             'use_sim_time': use_sim_time_config,
         }.items(),
+    )
+
+    # Base Footprint Publisher
+    base_footprint_publisher = Node(
+        package='nobody_bringup',
+        executable='base_footprint_publisher.py',
+        name='base_footprint_publisher',
+        output='screen'
     )
 
 
@@ -79,4 +89,5 @@ def generate_launch_description():
         use_sim_time_arg,
         slam_toolbox_launch,
         nav2_launch,
+        base_footprint_publisher,
     ])

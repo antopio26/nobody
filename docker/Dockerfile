@@ -61,5 +61,10 @@ RUN . /opt/ros/${ROS_DISTRO}/setup.sh && \
 RUN echo "source /opt/ros/${ROS_DISTRO}/setup.bash" >> /root/.bashrc && \
     echo "source /ros2_ws/install/setup.bash" >> /root/.bashrc
 
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ros-humble-turtle-tf2-py \
+    ros-humble-tf2-tools \
+    ros-humble-tf-transformations
+
 # Set default command
 CMD ["bash"]

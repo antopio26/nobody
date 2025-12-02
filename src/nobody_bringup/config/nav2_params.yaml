@@ -339,7 +339,7 @@ local_costmap:
       width: 6
       height: 6
       resolution: 0.05
-      # track_unknown_space: true  # STVL supports unknown space tracking
+      track_unknown_space: true  # STVL supports unknown space tracking
       always_send_full_costmap: True
       footprint: "[ [0.360, 0.200], [0.360, -0.200], [-0.450, -0.200], [-0.450, 0.200] ]"
 
@@ -359,8 +359,8 @@ local_costmap:
         voxel_size: 0.05  # meters - matches costmap resolution
 
         # Space tracking
-        # track_unknown_space: true
-        # unknown_threshold: 15  # number of iterations before voxel is considered unknown
+        track_unknown_space: true
+        unknown_threshold: 15  # number of iterations before voxel is considered unknown
         mark_threshold: 0  # minimum voxel height to be considered obstacle
 
         # Update parameters
@@ -444,8 +444,8 @@ local_costmap:
       # Inflation layer
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
-        cost_scaling_factor: 2.0
-        inflation_radius: 0.30
+        cost_scaling_factor: 2.0 # 2.0
+        inflation_radius: 0.5 # 0.30
 
 # ============================================================================
 # GLOBAL COSTMAP with SPATIO-TEMPORAL VOXEL LAYER
@@ -456,17 +456,18 @@ global_costmap:
       update_frequency: 2.0
       publish_frequency: 1.0
       always_send_full_costmap: True
-      global_frame: odom
+      global_frame: map
       robot_base_frame: base_link
       use_sim_time: False
       resolution: 0.05
-      # track_unknown_space: true
+      track_unknown_space: true
       static_map: False
       width: 500
       height: 500
       origin_x: -250.0
       origin_y: -250.0
       footprint: "[ [0.360, 0.200], [0.360, -0.200], [-0.450, -0.200], [-0.450, 0.200] ]"
+      
 
       # STVL with denoise layer
       plugins: ["static_layer", "stvl_layer", "denoise_layer", "inflation_layer"]
@@ -484,13 +485,13 @@ global_costmap:
         enabled: true
 
         # Voxel decay parameters - longer for global map
-        voxel_decay: 30.0  # seconds - global should remember longer
-        decay_model: -1  # 0=linear, 1=exponential, -1=persistent (use -1 for permanent)
+        voxel_decay: 120.0  # seconds - global should remember longer
+        decay_model: 0  # 0=linear, 1=exponential, -1=persistent (use -1 for permanent)
         voxel_size: 0.05  # meters
 
         # Space tracking
-        # track_unknown_space: true
-        # unknown_threshold: 15
+        track_unknown_space: true
+        unknown_threshold: 15
         mark_threshold: 0
 
         # Update parameters
@@ -579,8 +580,8 @@ global_costmap:
       # Inflation layer
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
-        cost_scaling_factor: 4.0
-        inflation_radius: 0.25
+        cost_scaling_factor: 2.0 # 4.0
+        inflation_radius: 0.5 # 0.25
 
 # ============================================================================
 # PLANNER SERVER - Smac Hybrid A* with tightened tolerance

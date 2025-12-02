@@ -74,7 +74,7 @@ def generate_launch_description():
         namespace='',
         remappings=[
             # ('odom', '/utlidar/odom'),
-            # ('/tf', '/tf_unused'),
+            # ('/tf', '/unused'),
         ],
 
     )

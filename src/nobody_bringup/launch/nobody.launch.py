@@ -29,7 +29,7 @@ def generate_launch_description():
 
     launch_rko_lio_arg = DeclareLaunchArgument(
         'rko_lio',
-        default_value='true',
+        default_value='false',
         description='Whether to launch RKO_LIO'
     )
 
@@ -118,6 +118,6 @@ def generate_launch_description():
         go2_bringup_launch,
         pointcloud_unitree_filter_node,
         pointcloud_hesai_filter_node,
-        # rko_lio_launch,
+        rko_lio_launch,
         navigation_mapping_launch,
     ])

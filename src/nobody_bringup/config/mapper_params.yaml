@@ -12,10 +12,12 @@ slam_toolbox:
     # ROS Parameters
     odom_frame: odom
     map_frame: map
-    base_frame: base_link
+    base_frame: base_footprint
     scan_topic: /scan
     use_map_saver: true
-    mode: mapping #localization
+    mode: mapping # localization
+    map_start_pose: [0.0, 0.0, 0.0]
+    map_start_at_dock: true
 
     # Mapper params
     debug_logging: false
@@ -27,7 +29,7 @@ slam_toolbox:
     minimum_time_interval: 0.5
     transform_timeout: 0.2
     tf_buffer_duration: 30.
-    stack_size_to_use: 40000000 #// program needs a larger stack size to serialize large maps
+    stack_size_to_use: 40000000 # program needs a larger stack size to serialize large maps
     enable_interactive_mode: true
 
     # General Parameters
