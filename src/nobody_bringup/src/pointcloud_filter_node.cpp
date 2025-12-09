@@ -71,12 +71,14 @@ public:
 private:
     void pc_callback(const sensor_msgs::msg::PointCloud2::SharedPtr msg)
     {
+        RCLCPP_INFO(this->get_logger(), "Received pointcloud with %d points", msg->width * msg->height);
         // 1. Convert to PCL PointCloud<PointXYZ>
         // This automatically strips all fields except x, y, z
         pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>);
         pcl::fromROSMsg(*msg, *cloud);
 
         if (cloud->empty()) {
+            RCLCPP_WARN(this->get_logger(), "Received empty pointcloud");
             return;
         }
 
@@ -152,6 +154,8 @@ private:
         output_msg.header = msg->header; // Preserve header (frame_id, stamp)
         
         pub_->publish(output_msg);
+
+        RCLCPP_INFO(this->get_logger(), "Published filtered pointcloud with %lu points", cloud_filtered->points.size());
     }
 
     std::string input_topic_;

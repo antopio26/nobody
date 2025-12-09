@@ -17,6 +17,9 @@ find_package(tf2_sensor_msgs REQUIRED)
 find_package(pcl_conversions REQUIRED)
 # PCL is often found via system, but pcl_conversions/pcl_ros should handle it. 
 # Explicitly finding PCL might be needed if not transitively included.
+if(POLICY CMP0074)
+  cmake_policy(SET CMP0074 NEW)
+endif()
 find_package(PCL REQUIRED)
 
 if(BUILD_TESTING)

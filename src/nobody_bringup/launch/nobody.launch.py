@@ -71,8 +71,7 @@ def generate_launch_description():
         PythonLaunchDescriptionSource(go2_bringup_launch_file),
         launch_arguments={
             'lidar': 'True',
-            'realsense': 'False',
-            'rviz': 'False',
+            'realsense': 'True',
         }.items()
     )
 
@@ -118,6 +117,6 @@ def generate_launch_description():
         go2_bringup_launch,
         pointcloud_unitree_filter_node,
         pointcloud_hesai_filter_node,
-        rko_lio_launch,
+        # rko_lio_launch,
         navigation_mapping_launch,
     ])
