@@ -29,25 +29,10 @@ if(BUILD_TESTING)
   ament_lint_auto_find_test_dependencies()
 endif()
 
-# C++ Node
-add_executable(pointcloud_filter_node src/pointcloud_filter_node.cpp)
-ament_target_dependencies(pointcloud_filter_node
-  rclcpp
-  sensor_msgs
-  pcl_conversions
-  PCL
-)
 
 # Install Python executables
 install(PROGRAMS
-  scripts/pointcloud_filter_node.py
   scripts/base_footprint_publisher.py
-  DESTINATION lib/${PROJECT_NAME}
-)
-
-# Install C++ executables
-install(TARGETS
-  pointcloud_filter_node
   DESTINATION lib/${PROJECT_NAME}
 )
 

@@ -35,6 +35,31 @@ services:
     command: >
       bash -c " cd /ros2_ws && colcon build --packages-select nobody_bringup hesai_ros_driver --symlink-install && source /ros2_ws/install/setup.bash && ros2 launch nobody_bringup nobody.launch.py "
 
+  torch_ros:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.torch
+    environment:
+      - DISPLAY=${DISPLAY:-}
+      - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+      - CYCLONEDDS_URI=/ros2_ws/cyclonedds.xml
+      - LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix
+      - ${HOME}/.Xauthority:/root/.Xauthority:rw
+      # Mount only your custom packages and config files
+      - ./src/nobody_nodes:/ros2_ws/src/nobody_nodes
+      - ./cyclonedds.xml:/ros2_ws/cyclonedds.xml
+    network_mode: "host"
+    ipc: "host"
+    privileged: true
+    devices:
+      - /dev:/dev
+    runtime: nvidia
+    restart: unless-stopped
+    command: >
+      bash -ci "cd /ros2_ws && colcon build --packages-select nobody_nodes --symlink-install && source /ros2_ws/install/local_setup.bash && ros2 launch nobody_nodes filters.launch.py  "
+
   foxglove_bridge:
     build:
       context: .

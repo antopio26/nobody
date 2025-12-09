@@ -59,12 +59,6 @@ def generate_launch_description():
         'rko_lio.launch.py'
     )
 
-    # Path to the pointcloud filter config file
-    pointcloud_filter_config_file = os.path.join(
-        get_package_share_directory('nobody_bringup'),
-        'config',
-        'pointcloud_filter.yaml'
-    )
 
     # Include the go2_bringup launch file with specified arguments
     go2_bringup_launch = IncludeLaunchDescription(
@@ -91,23 +85,7 @@ def generate_launch_description():
         condition=IfCondition(launch_rko_lio_config)
     )
 
-    # Pointcloud filter node
-    pointcloud_unitree_filter_node = Node(
-        package='nobody_bringup',
-        executable='pointcloud_filter_node',
-        name='pointcloud_unitree_filter_node',
-        parameters=[pointcloud_filter_config_file],
-        output='screen'
-    )
 
-    # Pointcloud filter node
-    pointcloud_hesai_filter_node = Node(
-        package='nobody_bringup',
-        executable='pointcloud_filter_node',
-        name='pointcloud_hesai_filter_node',
-        parameters=[pointcloud_filter_config_file],
-        output='screen'
-    )
 
     # Create the LaunchDescription with all components
     return LaunchDescription([
@@ -115,8 +93,6 @@ def generate_launch_description():
         launch_nav2_arg,
         launch_rko_lio_arg,
         go2_bringup_launch,
-        pointcloud_unitree_filter_node,
-        pointcloud_hesai_filter_node,
         # rko_lio_launch,
         navigation_mapping_launch,
     ])

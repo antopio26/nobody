@@ -1,0 +1,22 @@
+# Topic names for RealSense camera input and pose output
+
+# Input topics from RealSense camera
+image_topic: "/camera/camera/color/image_raw"
+depth_topic: "/camera/camera/depth/image_rect_raw"
+
+# Camera info topic for intrinsic parameters
+camera_info_topic: "/camera/camera/depth/camera_info"
+
+# Output topic for detected object pose
+pose_topic: "/argo_vision/object_pose"
+
+# Service name for setting target class
+set_target_class_service: "/argo_vision/set_target_class"
+
+# YOLO model configuration
+yolo_model: "yolo11n-seg.pt"  # YOLO11 nano segmentation model (fast)
+
+# Detection parameters
+confidence_threshold: 0.5
+min_depth: 0.1  # Minimum valid depth in meters
+max_depth: 10.0  # Maximum valid depth in meters

@@ -2,6 +2,7 @@ src/go2_*
 src/unitree_*
 src/HesaiLidar_ROS_2.0
 src/foxglove
+__pycache__
 output.log
 build
 install
