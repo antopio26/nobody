@@ -66,5 +66,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ros-humble-tf2-tools \
     ros-humble-tf-transformations
 
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ros-humble-compressed-image-transport \
+    ros-humble-image-transport-plugins \
+    ros-humble-image-transport
+
 # Set default command
 CMD ["bash"]
