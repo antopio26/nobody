@@ -95,7 +95,7 @@ def generate_launch_description():
         name='pointcloud_to_laserscan',
         namespace='',
         output='screen',
-        remappings=[('/cloud_in', '/lidar_points')],
+        remappings=[('/cloud_in', '/filtered_lidar_points')],
         parameters=[{
                 'target_frame': 'hesai_lidar',
                 'max_height': 0.7,
@@ -121,6 +121,14 @@ def generate_launch_description():
         output='screen',
     )
 
+    static_tf_camera_link_cmd = Node(
+        package='tf2_ros',
+        executable='static_transform_publisher',
+        name='static_tf_camera_link',
+        arguments=['0', '0', '0', '0', '0', '0', 'Head_upper', 'camera_link'],
+        output='screen',
+    )
+
 
     ld = LaunchDescription()
     ld.add_action(declare_lidar_cmd)
@@ -132,5 +140,5 @@ def generate_launch_description():
     ld.add_action(pointcloud_to_laserscan_cmd)
     ld.add_action(static_tf_lidar_cmd)
     ld.add_action(static_tf_imu_cmd)
-
+    ld.add_action(static_tf_camera_link_cmd)
     return ld
