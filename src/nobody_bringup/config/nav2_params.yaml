@@ -126,7 +126,7 @@ following_server:
     search_by_rotating: false
     odom_topic: "odom"
     odom_duration: 0.3
-    transform_tolerance: 0.1
+    transform_tolerance: 1.0
     controller:
       k_phi: 3.0
       k_delta: 2.0
@@ -137,7 +137,7 @@ following_server:
       v_angular_max: 1.0
       slowdown_radius: 0.15
       use_collision_detection: false
-      transform_tolerance: 0.1
+      transform_tolerance: 1.0
 
 # ------------------------------------------------------------------------------
 # FOLLOWING SERVER (Object/Frame Following)
@@ -159,7 +159,7 @@ following_server:
     search_by_rotating: false
     odom_topic: "odom"
     odom_duration: 0.3
-    transform_tolerance: 0.1
+    transform_tolerance: 0.5
     controller:
       k_phi: 3.0
       k_delta: 2.0
@@ -170,7 +170,7 @@ following_server:
       v_angular_max: 1.0
       slowdown_radius: 0.15
       use_collision_detection: false
-      transform_tolerance: 0.1
+      transform_tolerance: 0.5
 
 
 # ============================================================================
@@ -179,11 +179,11 @@ following_server:
 controller_server:
   ros__parameters:
     use_sim_time: False
-    controller_frequency: 30.0  # CHANGED: 5.0 -> 30.0 Hz for responsive control
-    min_x_velocity_threshold: 0.001
-    min_y_velocity_threshold: 0.001
-    min_theta_velocity_threshold: 0.001
-    failure_tolerance: 0.3
+    controller_frequency: 20.0 # 30.0  # CHANGED: 5.0 -> 30.0 Hz for responsive control
+    min_x_velocity_threshold: 0.5 # 0.001
+    min_y_velocity_threshold: 0.5 # 0.001
+    min_theta_velocity_threshold: 0.5 # 0.001
+    failure_tolerance: 0.3 # 0.3
     progress_checker_plugin: "progress_checker"
     goal_checker_plugins: ["general_goal_checker"]
     controller_plugins: ["FollowPath"]
@@ -198,7 +198,7 @@ controller_server:
     general_goal_checker:
       stateful: True
       plugin: "nav2_controller::SimpleGoalChecker"
-      xy_goal_tolerance: 0.10  # CHANGED: 0.15 -> 0.10 m for precision
+      xy_goal_tolerance: 0.20 # 0.10  # CHANGED: 0.15 -> 0.10 m for precision
       yaw_goal_tolerance: 0.15  # CHANGED: 0.20 -> 0.15 rad for precision
 
     # ========================================================================
@@ -208,9 +208,9 @@ controller_server:
       plugin: "nav2_mppi_controller::MPPIController"
 
       # Time and batch parameters
-      time_steps: 56
+      time_steps: 56 # 56
       model_dt: 0.05
-      batch_size: 2000
+      batch_size: 1400 # 1400 # 2000
       iteration_count: 1
 
       # Velocity limits for Unitree Go2
@@ -223,7 +223,7 @@ controller_server:
       ax_max: 2.5
       ax_min: -2.5
       ay_max: 0.0
-      az_max: 3.2
+      az_max: 2.0 # 3.2
 
       # MPPI algorithm parameters
       temperature: 0.3
@@ -237,7 +237,7 @@ controller_server:
 
       # Path handling
       prune_distance: 1.5
-      transform_tolerance: 0.2
+      transform_tolerance: 0.5
       enforce_path_inversion: false
 
       # Critics for trajectory evaluation
@@ -287,7 +287,7 @@ controller_server:
       # Path Align Critic
       PathAlignCritic:
         enabled: true
-        cost_weight: 10.0
+        cost_weight: 5.0 # 10.0
         cost_power: 1
         max_path_occupancy_ratio: 0.05
         trajectory_point_step: 4
@@ -320,9 +320,9 @@ controller_server:
       # Velocity Deadband Critic
       VelocityDeadbandCritic:
         enabled: true
-        cost_weight: 35.0
+        cost_weight: 5.0 # 35.0
         cost_power: 1
-        deadband_velocities: [0.15, 0.0, 0.2]
+        deadband_velocities: [0.05, 0.0, 0.1] # [0.15, 0.0, 0.2]
 
 # ============================================================================
 # LOCAL COSTMAP with SPATIO-TEMPORAL VOXEL LAYER
@@ -354,7 +354,7 @@ local_costmap:
         enabled: true
 
         # Voxel decay parameters
-        voxel_decay: 15.0  # seconds - local costmap should decay faster
+        voxel_decay: 3.0 # 15.0  # seconds - local costmap should decay faster
         decay_model: 0  # 0=linear, 1=exponential, -1=persistent
         voxel_size: 0.05  # meters - matches costmap resolution
 
@@ -370,7 +370,7 @@ local_costmap:
         # Obstacle range
         origin_z: 0.0  # meters
         publish_voxel_map: true  # Enable for visualization
-        transform_tolerance: 0.2  # seconds
+        transform_tolerance: 0.5  # seconds
 
         # Mapping mode (disabled for navigation)
         mapping_mode: false
@@ -389,7 +389,7 @@ local_costmap:
           clearing: false
           min_obstacle_height: 0.15 # meters
           max_obstacle_height: 0.9  # meters
-          expected_update_rate: 0.5  # CHANGED: 0.2 -> 0.5s tolerance (was too strict)
+          expected_update_rate: 0.8 # 0.5  # CHANGED: 0.2 -> 0.5s tolerance (was too strict)
           observation_persistence: 0.0  # 0=use latest only
           inf_is_valid: false
           clear_after_reading: true
@@ -501,7 +501,7 @@ global_costmap:
         # Obstacle range
         origin_z: 0.0
         publish_voxel_map: true
-        transform_tolerance: 0.2
+        transform_tolerance: 0.5
 
         # Mapping mode
         mapping_mode: false
@@ -605,7 +605,7 @@ planner_server:
       angle_quantization_bins: 64
       analytic_expansion_ratio: 3.5
       analytic_expansion_max_length: 3.0
-      minimum_turning_radius: 0.30
+      minimum_turning_radius: 0.05 # 0.30
       reverse_penalty: 2.1
       change_penalty: 0.0
       non_straight_penalty: 1.20
@@ -647,7 +647,7 @@ behavior_server:
 
     global_frame: odom
     robot_base_frame: base_link
-    transform_tolerance: 0.1
+    transform_tolerance: 0.5
     use_sim_time: False
     simulate_ahead_time: 2.0
     max_rotational_vel: 1.5
