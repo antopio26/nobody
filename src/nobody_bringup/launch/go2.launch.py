@@ -31,6 +31,8 @@ def generate_launch_description():
 
     nobody_bringup_dir = get_package_share_directory('nobody_bringup')
     robot_self_filter_config_file = os.path.join(nobody_bringup_dir, 'config', 'self_filter.yaml')
+    realsense_config_file = os.path.join(nobody_bringup_dir, 'config', 'realsense_params.yaml')
+
 
     declare_lidar_cmd = DeclareLaunchArgument(
         'lidar',
@@ -62,7 +64,10 @@ def generate_launch_description():
         PythonLaunchDescriptionSource([os.path.join(
             get_package_share_directory('realsense2_camera'),
             'launch/'), 'rs_launch.py']),
-        condition=IfCondition(PythonExpression([realsense]))
+        condition=IfCondition(PythonExpression([realsense])),
+        launch_arguments={
+                'config_file': realsense_config_file, 
+            }.items()
     )
 
     composable_nodes = []

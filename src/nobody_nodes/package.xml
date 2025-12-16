@@ -17,6 +17,7 @@
   <depend>tf2_ros</depend>
   <depend>tf2_py</depend>
   <depend>tf2_sensor_msgs</depend>
+  <depend>nobody_interfaces</depend>
 
 
   <export>

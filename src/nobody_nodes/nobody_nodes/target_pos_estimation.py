@@ -13,6 +13,7 @@ from rclpy.node import Node
 from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy
 from sensor_msgs.msg import Image, CameraInfo
 from geometry_msgs.msg import PoseStamped, TransformStamped
+from nobody_interfaces.srv import SetTargetClass
 from cv_bridge import CvBridge
 from tf2_ros import TransformBroadcaster
 
@@ -108,22 +109,11 @@ class TargetPosEstimationNode(Node):
         # Initialize TF broadcaster
         self.tf_broadcaster = TransformBroadcaster(self)
 
-        # Import service type - this will be generated at build time
-        # For now, we use a try-except to handle the case where it hasn't been built yet
-        try:
-            from argo_vision.srv import SetTargetClass
-            self.srv = self.create_service(
-                SetTargetClass,
-                self.config['set_target_class_service'],
-                self._set_target_class_callback
-            )
-            self.get_logger().info('SetTargetClass service created successfully')
-        except ImportError:
-            self.get_logger().warning(
-                'SetTargetClass service not available yet. '
-                'Please rebuild the package to generate service interfaces.'
-            )
-            self.srv = None
+        self.srv = self.create_service(
+            SetTargetClass,
+            self.config['set_target_class_service'],
+            self._set_target_class_callback
+        )
 
         # Create timer for processing (10 Hz)
         self.timer = self.create_timer(0.1, self._process_callback)

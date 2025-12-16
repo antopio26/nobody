@@ -1,0 +1,3 @@
+pointcloud__neon_.enable: true
+decimation_filter.enable: true
+decimation_filter.filter_magnitude: 8
