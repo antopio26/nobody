@@ -2,7 +2,7 @@
 """
 Argo Vision Node - ROS2 node for real-time object segmentation and pose estimation.
 
-This node subscribes to RGB and depth images from a RealSense camera,
+This node subscribes to RGB images and PointCloud2 data,
 performs YOLO-based segmentation, and publishes the pose of detected objects.
 """
 
@@ -11,11 +11,13 @@ import numpy as np
 import rclpy
 from rclpy.node import Node
 from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy
-from sensor_msgs.msg import Image, CameraInfo
+from sensor_msgs.msg import Image, PointCloud2, CompressedImage
 from geometry_msgs.msg import PoseStamped, TransformStamped
 from nobody_interfaces.srv import SetTargetClass
 from cv_bridge import CvBridge
 from tf2_ros import TransformBroadcaster
+import sensor_msgs_py.point_cloud2 as pc2
+from std_msgs.msg import Header
 
 class TargetPosEstimationNode(Node):
     """ROS2 node for YOLO-based object segmentation and pose estimation."""
@@ -25,27 +27,28 @@ class TargetPosEstimationNode(Node):
         super().__init__('target_pos_estimation_node')
 
         # Declare parameters
-        self.declare_parameter('image_topic', '/camera/camera/color/image_raw')
-        self.declare_parameter('depth_topic', '/camera/camera/depth/image_rect_raw')
-        self.declare_parameter('camera_info_topic', '/camera/camera/depth/camera_info')
+        self.declare_parameter('image_topic', '/camera/camera/color/image_raw/compressed')
+        self.declare_parameter('pointcloud_topic', '/camera/camera/depth/color/points')
         self.declare_parameter('pose_topic', '/argo_vision/object_pose')
+        self.declare_parameter('annotated_image_topic', '/argo_vision/annotated_image/compressed')
+        self.declare_parameter('filtered_pointcloud_topic', '/argo_vision/filtered_pointcloud')
         self.declare_parameter('set_target_class_service', '/argo_vision/set_target_class')
         self.declare_parameter('yolo_model', 'yolo11n-seg.pt')
         self.declare_parameter('confidence_threshold', 0.5)
-        self.declare_parameter('min_depth', 0.1)
-        self.declare_parameter('max_depth', 10.0)
+        self.declare_parameter('outlier_std_dev_multiplier', 2.0)
+
 
         # Get parameter values and store in config dictionary
         self.config = {
             'image_topic': self.get_parameter('image_topic').value,
-            'depth_topic': self.get_parameter('depth_topic').value,
-            'camera_info_topic': self.get_parameter('camera_info_topic').value,
+            'pointcloud_topic': self.get_parameter('pointcloud_topic').value,
             'pose_topic': self.get_parameter('pose_topic').value,
+            'annotated_image_topic': self.get_parameter('annotated_image_topic').value,
+            'filtered_pointcloud_topic': self.get_parameter('filtered_pointcloud_topic').value,
             'set_target_class_service': self.get_parameter('set_target_class_service').value,
             'yolo_model': self.get_parameter('yolo_model').value,
             'confidence_threshold': self.get_parameter('confidence_threshold').value,
-            'min_depth': self.get_parameter('min_depth').value,
-            'max_depth': self.get_parameter('max_depth').value
+            'outlier_std_dev_multiplier': self.get_parameter('outlier_std_dev_multiplier').value,
         }
 
         # Initialize CV bridge
@@ -58,16 +61,9 @@ class TargetPosEstimationNode(Node):
         # Target class to detect (set via service)
         self.target_class = None
 
-        # Camera intrinsics (will be set from CameraInfo message)
-        self.camera_info = None
-        self.fx = None
-        self.fy = None
-        self.cx = None
-        self.cy = None
-
-        # Latest images
+        # Latest data
         self.latest_rgb = None
-        self.latest_depth = None
+        self.latest_pc = None
         self.latest_rgb_header = None
 
         # QoS profile for sensor data
@@ -79,32 +75,36 @@ class TargetPosEstimationNode(Node):
 
         # Create subscribers
         self.rgb_sub = self.create_subscription(
-            Image,
+            CompressedImage,
             self.config['image_topic'],
             self._rgb_callback,
             sensor_qos
         )
 
-        self.depth_sub = self.create_subscription(
-            Image,
-            self.config['depth_topic'],
-            self._depth_callback,
+        self.pc_sub = self.create_subscription(
+            PointCloud2,
+            self.config['pointcloud_topic'],
+            self._pc_callback,
             sensor_qos
         )
 
-        self.camera_info_sub = self.create_subscription(
-            CameraInfo,
-            self.config['camera_info_topic'],
-            self._camera_info_callback,
-            sensor_qos
-        )
-
-        # Create publisher for object pose
+        # Create publishers
         self.pose_pub = self.create_publisher(
             PoseStamped,
             self.config['pose_topic'],
             10
         )
+        self.annotated_image_pub = self.create_publisher(
+            CompressedImage,
+            self.config['annotated_image_topic'],
+            10
+        )
+        self.filtered_pc_pub = self.create_publisher(
+            PointCloud2,
+            self.config['filtered_pointcloud_topic'],
+            10
+        )
+
 
         # Initialize TF broadcaster
         self.tf_broadcaster = TransformBroadcaster(self)
@@ -119,9 +119,11 @@ class TargetPosEstimationNode(Node):
         self.timer = self.create_timer(0.1, self._process_callback)
 
         self.get_logger().info('Argo Vision Node initialized')
-        self.get_logger().info(f'Subscribing to RGB: {self.config["image_topic"]}')
-        self.get_logger().info(f'Subscribing to Depth: {self.config["depth_topic"]}')
+        self.get_logger().info(f'Subscribing to RGB (Compressed): {self.config["image_topic"]}')
+        self.get_logger().info(f'Subscribing to PointCloud: {self.config["pointcloud_topic"]}')
         self.get_logger().info(f'Publishing pose to: {self.config["pose_topic"]}')
+        self.get_logger().info(f'Publishing annotated image to: {self.config["annotated_image_topic"]}')
+        self.get_logger().info(f'Publishing filtered pointcloud to: {self.config["filtered_pointcloud_topic"]}')
 
 
 
@@ -149,45 +151,17 @@ class TargetPosEstimationNode(Node):
             return False
 
     def _rgb_callback(self, msg):
-        """Callback for RGB image messages."""
+        """Callback for CompressedImage messages."""
         try:
-            self.latest_rgb = self.cv_bridge.imgmsg_to_cv2(msg, 'bgr8')
+            np_arr = np.frombuffer(msg.data, np.uint8)
+            self.latest_rgb = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
             self.latest_rgb_header = msg.header
         except Exception as e:
-            self.get_logger().error(f'Error converting RGB image: {e}')
+            self.get_logger().error(f'Error decompressing RGB image: {e}')
 
-    def _depth_callback(self, msg):
-        """Callback for depth image messages."""
-        try:
-            # RealSense depth is typically 16UC1 (millimeters)
-            if msg.encoding == '16UC1':
-                self.latest_depth = self.cv_bridge.imgmsg_to_cv2(msg, '16UC1')
-                # Convert to meters
-                self.latest_depth = self.latest_depth.astype(np.float32) / 1000.0
-            elif msg.encoding == '32FC1':
-                self.latest_depth = self.cv_bridge.imgmsg_to_cv2(msg, '32FC1')
-            else:
-                self.latest_depth = self.cv_bridge.imgmsg_to_cv2(
-                    msg, desired_encoding='passthrough'
-                )
-                if self.latest_depth.dtype == np.uint16:
-                    self.latest_depth = self.latest_depth.astype(np.float32) / 1000.0
-        except Exception as e:
-            self.get_logger().error(f'Error converting depth image: {e}')
-
-    def _camera_info_callback(self, msg):
-        """Callback for camera info messages."""
-        if self.camera_info is None:
-            self.camera_info = msg
-            # Extract intrinsic parameters
-            self.fx = msg.k[0]  # Focal length x
-            self.fy = msg.k[4]  # Focal length y
-            self.cx = msg.k[2]  # Principal point x
-            self.cy = msg.k[5]  # Principal point y
-            self.get_logger().info(
-                f'Camera intrinsics received: fx={self.fx:.2f}, fy={self.fy:.2f}, '
-                f'cx={self.cx:.2f}, cy={self.cy:.2f}'
-            )
+    def _pc_callback(self, msg):
+        """Callback for PointCloud2 messages."""
+        self.latest_pc = msg
 
     def _set_target_class_callback(self, request, response):
         """Service callback to set the target class for detection."""
@@ -200,11 +174,7 @@ class TargetPosEstimationNode(Node):
     def _process_callback(self):
         """Timer callback to process images and detect objects."""
         # Check if we have all required data
-        if self.latest_rgb is None or self.latest_depth is None:
-            return
-
-        if self.camera_info is None:
-            self.get_logger().warning('Waiting for camera info...', throttle_duration_sec=5.0)
+        if self.latest_rgb is None or self.latest_pc is None:
             return
 
         if self.target_class is None:
@@ -218,10 +188,15 @@ class TargetPosEstimationNode(Node):
         if not self._init_yolo():
             return
 
+        # --- Create local copies of data to ensure consistency ---
+        rgb_image = self.latest_rgb.copy()
+        point_cloud = self.latest_pc
+        header = point_cloud.header
+
         # Run YOLO segmentation
         try:
             results = self.yolo_model(
-                self.latest_rgb,
+                rgb_image,
                 conf=self.config['confidence_threshold'],
                 verbose=False
             )
@@ -241,9 +216,11 @@ class TargetPosEstimationNode(Node):
 
         # Find the target class in detections
         target_mask = None
+        detected_classes = []
         for i, box in enumerate(result.boxes):
             class_id = int(box.cls[0])
             class_name = result.names[class_id]
+            detected_classes.append(class_name)
 
             if class_name.lower() == self.target_class.lower():
                 # Get the mask for this detection
@@ -252,41 +229,32 @@ class TargetPosEstimationNode(Node):
                     break
 
         if target_mask is None:
-            self.get_logger().debug(
-                f'Target class "{self.target_class}" not found in frame'
+            self.get_logger().info(
+                f'Target class "{self.target_class}" not found in frame. '
+                f'Detected classes: {list(set(detected_classes))}'
             )
             return
 
-        # Resize mask to match depth image dimensions if necessary
-        if target_mask.shape != self.latest_depth.shape:
+        # Resize mask to match point cloud dimensions if necessary
+        if target_mask.shape != (point_cloud.height, point_cloud.width):
             target_mask = cv2.resize(
                 target_mask,
-                (self.latest_depth.shape[1], self.latest_depth.shape[0]),
+                (point_cloud.width, point_cloud.height),
                 interpolation=cv2.INTER_NEAREST
             )
 
-        # Compute centroid from depth map
-        pose = self._compute_centroid_pose(target_mask)
+        # Compute centroid from point cloud
+        pose, filtered_points = self._compute_centroid_pose(target_mask, point_cloud)
 
-        if pose is not None:
-            # Set frame_id from camera image header
-            pose.header.frame_id = self.latest_rgb_header.frame_id
-            pose.header.stamp = self.get_clock().now().to_msg()
+        if pose is not None and filtered_points is not None:
+            current_stamp = self.get_clock().now().to_msg()
 
-            # Publish pose
-            self.pose_pub.publish(pose)
+            # --- Publish everything ---
+            self._publish_pose(pose, header, current_stamp)
+            self._publish_tf(pose, header, current_stamp)
+            self._publish_filtered_pointcloud(filtered_points, header, current_stamp)
+            self._publish_annotated_image(rgb_image, target_mask, header, current_stamp)
 
-            # Publish TF
-            t = TransformStamped()
-            t.header.stamp = pose.header.stamp
-            t.header.frame_id = pose.header.frame_id
-            t.child_frame_id = f"{self.target_class}_detected"
-            t.transform.translation.x = pose.pose.position.x
-            t.transform.translation.y = pose.pose.position.y
-            t.transform.translation.z = pose.pose.position.z
-            t.transform.rotation = pose.pose.orientation
-            
-            self.tf_broadcaster.sendTransform(t)
 
             self.get_logger().debug(
                 f'Published pose for "{self.target_class}": '
@@ -295,59 +263,65 @@ class TargetPosEstimationNode(Node):
                 f'z={pose.pose.position.z:.3f}'
             )
 
-    def _compute_centroid_pose(self, mask):
+    def _compute_centroid_pose(self, mask, point_cloud):
         """
-        Compute the 3D centroid pose from segmentation mask and depth map.
+        Compute the 3D centroid pose from segmentation mask and point cloud.
+        Also filters outliers from the selected points.
 
         Args:
             mask: Binary segmentation mask
+            point_cloud: The PointCloud2 message
 
         Returns:
-            PoseStamped message with centroid position, or None if invalid
+            Tuple of (PoseStamped, np.ndarray) or (None, None)
         """
-        # Get valid depth points within the mask
+        # Get valid points within the mask
         mask_bool = mask > 0.5
 
-        # Filter by depth range
-        depth_masked = np.where(
-            mask_bool &
-            (self.latest_depth > self.config['min_depth']) &
-            (self.latest_depth < self.config['max_depth']),
-            self.latest_depth,
-            0
+        # Read points from the point cloud that correspond to the mask
+        points_generator = pc2.read_points(
+            point_cloud,
+            field_names=('x', 'y', 'z'),
+            skip_nans=True,
+            uvs=[(u, v) for v, u in zip(*np.where(mask_bool))]
         )
 
-        # Get indices of valid points
-        valid_indices = np.where(depth_masked > 0)
+        # Convert generator to a list of points
+        points = list(points_generator)
 
-        if len(valid_indices[0]) == 0:
-            self.get_logger().debug('No valid depth points in mask')
-            return None
+        if not points:
+            self.get_logger().debug('No valid points in mask')
+            return None, None
 
-        # Get depth values at valid points
-        depths = depth_masked[valid_indices]
+        points_arr = np.array(points)
 
-        # Compute 3D points using pinhole camera model
-        # X = (u - cx) * Z / fx
-        # Y = (v - cy) * Z / fy
-        # Z = depth
-        v_coords = valid_indices[0]  # row indices
-        u_coords = valid_indices[1]  # column indices
+        # --- Outlier removal ---
+        if points_arr.shape[0] > 10: # Only filter if we have enough points
+            mean = np.mean(points_arr, axis=0)
+            std_dev = np.std(points_arr, axis=0)
+            distance_from_mean = np.linalg.norm(points_arr - mean, axis=1)
+            
+            max_allowed_distance = np.median(distance_from_mean) + \
+                self.config['outlier_std_dev_multiplier'] * np.std(distance_from_mean)
+            
+            inliers = distance_from_mean < max_allowed_distance
+            filtered_points = points_arr[inliers]
 
-        x_coords = (u_coords - self.cx) * depths / self.fx
-        y_coords = (v_coords - self.cy) * depths / self.fy
-        z_coords = depths
+            if filtered_points.shape[0] == 0:
+                self.get_logger().debug('Outlier filter removed all points.')
+                return None, None
+        else:
+            filtered_points = points_arr
+
 
         # Compute centroid (mean of all 3D points)
-        centroid_x = float(np.mean(x_coords))
-        centroid_y = float(np.mean(y_coords))
-        centroid_z = float(np.mean(z_coords))
+        centroid = np.mean(filtered_points, axis=0)
 
         # Create PoseStamped message
         pose = PoseStamped()
-        pose.pose.position.x = centroid_x
-        pose.pose.position.y = centroid_y
-        pose.pose.position.z = centroid_z
+        pose.pose.position.x = float(centroid[0])
+        pose.pose.position.y = float(centroid[1])
+        pose.pose.position.z = float(centroid[2])
 
         # Set orientation to identity (we don't estimate orientation)
         pose.pose.orientation.w = 1.0
@@ -355,7 +329,60 @@ class TargetPosEstimationNode(Node):
         pose.pose.orientation.y = 0.0
         pose.pose.orientation.z = 0.0
 
-        return pose
+        return pose, filtered_points
+
+    def _publish_pose(self, pose, header, stamp):
+        pose.header.frame_id = header.frame_id
+        pose.header.stamp = stamp
+        self.pose_pub.publish(pose)
+
+    def _publish_tf(self, pose, header, stamp):
+        t = TransformStamped()
+        t.header.stamp = stamp
+        t.header.frame_id = header.frame_id
+        t.child_frame_id = f"{self.target_class}_detected"
+        t.transform.translation.x = pose.pose.position.x
+        t.transform.translation.y = pose.pose.position.y
+        t.transform.translation.z = pose.pose.position.z
+        t.transform.rotation = pose.pose.orientation
+        self.tf_broadcaster.sendTransform(t)
+
+    def _publish_filtered_pointcloud(self, points, header, stamp):
+        if points is None or len(points) == 0:
+            return
+        
+        pc_header = Header(stamp=stamp, frame_id=header.frame_id)
+        
+        # Create PointCloud2 message
+        pc_msg = pc2.create_cloud_xyz32(pc_header, points)
+        self.filtered_pc_pub.publish(pc_msg)
+
+    def _publish_annotated_image(self, image, mask, header, stamp):
+        # Resize mask to image dimensions
+        if image.shape[:2] != mask.shape:
+            mask = cv2.resize(mask, (image.shape[1], image.shape[0]), interpolation=cv2.INTER_NEAREST)
+
+        # Create a color overlay for the mask
+        color_mask = np.zeros_like(image)
+        color_mask[mask > 0.5] = [0, 255, 0]  # Green
+
+        # Blend the original image and the mask
+        annotated_image = cv2.addWeighted(image, 0.7, color_mask, 0.3, 0)
+
+        # Resize to half resolution
+        h, w = annotated_image.shape[:2]
+        resized_image = cv2.resize(annotated_image, (w // 2, h // 2), interpolation=cv2.INTER_AREA)
+
+        # Compress to JPEG
+        _, buffer = cv2.imencode('.jpg', resized_image)
+        
+        # Create and publish CompressedImage message
+        compressed_msg = CompressedImage()
+        compressed_msg.header.stamp = stamp
+        compressed_msg.header.frame_id = header.frame_id
+        compressed_msg.format = "jpeg"
+        compressed_msg.data = buffer.tobytes()
+        self.annotated_image_pub.publish(compressed_msg)
 
 
 def main(args=None):
