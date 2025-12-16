@@ -486,7 +486,7 @@ global_costmap:
   global_costmap:
     ros__parameters:
       update_frequency: 2.0
-      publish_frequency: 1.0
+      publish_frequency: 0.5
       always_send_full_costmap: True
       global_frame: map
       robot_base_frame: base_link
@@ -518,7 +518,7 @@ global_costmap:
         enabled: true
 
         # Voxel decay parameters - longer for global map
-        voxel_decay: 120.0  # seconds - global should remember longer
+        voxel_decay: 240.0  # seconds - global should remember longer
         decay_model: 0  # 0=linear, 1=exponential, -1=persistent (use -1 for permanent)
         voxel_size: 0.05  # meters
 
@@ -658,8 +658,6 @@ planner_server:
     GridBased:
       plugin: "nav2_smac_planner/SmacPlannerHybrid"
       allow_unknown: true
-      smoother:
-        path_smoothness_cost_weight: 100.0
       cost_travel_multiplier: 2.0
       unknown_cost_value: 150
       tolerance: 0.5
@@ -688,7 +686,7 @@ planner_server:
       smoother:
         max_iterations: 1000
         w_smooth: 0.3
-        w_data: 0.2
+        w_data: 0.8
         tolerance: 1.0e-10
         do_refinement: true
 
