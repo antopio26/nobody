@@ -25,7 +25,25 @@
             <ClearEntireCostmap name="ClearLocalCostmap-Subtree" service_name="local_costmap/clear_entirely_local_costmap"/>
             <ClearEntireCostmap name="ClearGlobalCostmap-Subtree" service_name="global_costmap/clear_entirely_global_costmap"/>
           </Sequence>
-          <Wait wait_duration="1"/>
+          <Sequence name="BlindNavigationRecovery">
+            <ToggleLayer service_name="global_costmap/global_costmap/set_parameters" layer_name="static_layer" enabled="false"/>
+            <ClearEntireCostmap name="ClearGlobal-Blind" service_name="global_costmap/clear_entirely_global_costmap"/>
+            <ForceSuccess>
+              <TimeLimit time_limit="5.0">
+                <RecoveryNode number_of_retries="4" name="BlindRetry">
+                   <PipelineSequence name="BlindNavigate">
+                     <RateController hz="1.0">
+                       <ComputePathToPose goal="{goal}" path="{path}" planner_id="GridBased"/>
+                     </RateController>
+                     <FollowPath path="{path}" controller_id="FollowPath"/>
+                   </PipelineSequence>
+                   <ClearEntireCostmap name="RetryClear-Blind" service_name="global_costmap/clear_entirely_global_costmap"/>
+                </RecoveryNode>
+              </TimeLimit>
+            </ForceSuccess>
+            <ToggleLayer service_name="global_costmap/global_costmap/set_parameters" layer_name="static_layer" enabled="true"/>
+            <ClearEntireCostmap name="RestoreGlobal" service_name="global_costmap/clear_entirely_global_costmap"/>
+          </Sequence>
         </RoundRobin>
       </ReactiveFallback>
     </RecoveryNode>

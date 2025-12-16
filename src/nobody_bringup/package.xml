@@ -18,6 +18,10 @@
   <depend>tf2_py</depend>
   <depend>tf2_sensor_msgs</depend>
   <depend>pcl_conversions</depend>
+  <depend>nav2_behavior_tree</depend>
+  <depend>behaviortree_cpp_v3</depend>
+  <depend>pluginlib</depend>
+  <depend>rcl_interfaces</depend>
   <depend>libpcl-all-dev</depend>
 
   <exec_depend>sensor_msgs_py</exec_depend>

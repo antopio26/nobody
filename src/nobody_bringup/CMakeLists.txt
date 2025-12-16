@@ -22,6 +22,29 @@ if(POLICY CMP0074)
 endif()
 find_package(PCL REQUIRED)
 
+find_package(nav2_behavior_tree REQUIRED)
+find_package(behaviortree_cpp_v3 REQUIRED)
+find_package(pluginlib REQUIRED)
+find_package(rcl_interfaces REQUIRED)
+
+add_library(nobody_bringup_plugins plugins/toggle_layer.cpp)
+ament_target_dependencies(nobody_bringup_plugins
+  rclcpp
+  nav2_behavior_tree
+  behaviortree_cpp_v3
+  rcl_interfaces
+  pluginlib
+)
+
+
+install(TARGETS nobody_bringup_plugins
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
+)
+
+
+
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   set(ament_cmake_copyright_FOUND TRUE)
