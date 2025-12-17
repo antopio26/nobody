@@ -11,7 +11,7 @@ import numpy as np
 import rclpy
 from rclpy.node import Node
 from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy
-from sensor_msgs.msg import Image, PointCloud2, CompressedImage
+from sensor_msgs.msg import Image, PointCloud2, CompressedImage, CameraInfo
 from geometry_msgs.msg import PoseStamped, TransformStamped
 from nobody_interfaces.srv import SetTargetClass
 from cv_bridge import CvBridge
@@ -29,6 +29,7 @@ class TargetPosEstimationNode(Node):
         # Declare parameters
         self.declare_parameter('image_topic', '/camera/camera/color/image_raw/compressed')
         self.declare_parameter('pointcloud_topic', '/camera/camera/depth/color/points')
+        self.declare_parameter('camera_info_topic', '/camera/camera/color/camera_info')
         self.declare_parameter('pose_topic', '/argo_vision/object_pose')
         self.declare_parameter('annotated_image_topic', '/argo_vision/annotated_image/compressed')
         self.declare_parameter('filtered_pointcloud_topic', '/argo_vision/filtered_pointcloud')
@@ -42,6 +43,7 @@ class TargetPosEstimationNode(Node):
         self.config = {
             'image_topic': self.get_parameter('image_topic').value,
             'pointcloud_topic': self.get_parameter('pointcloud_topic').value,
+            'camera_info_topic': self.get_parameter('camera_info_topic').value,
             'pose_topic': self.get_parameter('pose_topic').value,
             'annotated_image_topic': self.get_parameter('annotated_image_topic').value,
             'filtered_pointcloud_topic': self.get_parameter('filtered_pointcloud_topic').value,
@@ -65,6 +67,9 @@ class TargetPosEstimationNode(Node):
         self.latest_rgb = None
         self.latest_pc = None
         self.latest_rgb_header = None
+        self.camera_info = None
+        self.camera_matrix = None
+        self.dist_coeffs = None
 
         # QoS profile for sensor data
         sensor_qos = QoSProfile(
@@ -85,6 +90,13 @@ class TargetPosEstimationNode(Node):
             PointCloud2,
             self.config['pointcloud_topic'],
             self._pc_callback,
+            sensor_qos
+        )
+
+        self.camera_info_sub = self.create_subscription(
+            CameraInfo,
+            self.config['camera_info_topic'],
+            self._camera_info_callback,
             sensor_qos
         )
 
@@ -121,6 +133,7 @@ class TargetPosEstimationNode(Node):
         self.get_logger().info('Argo Vision Node initialized')
         self.get_logger().info(f'Subscribing to RGB (Compressed): {self.config["image_topic"]}')
         self.get_logger().info(f'Subscribing to PointCloud: {self.config["pointcloud_topic"]}')
+        self.get_logger().info(f'Subscribing to CameraInfo: {self.config["camera_info_topic"]}')
         self.get_logger().info(f'Publishing pose to: {self.config["pose_topic"]}')
         self.get_logger().info(f'Publishing annotated image to: {self.config["annotated_image_topic"]}')
         self.get_logger().info(f'Publishing filtered pointcloud to: {self.config["filtered_pointcloud_topic"]}')
@@ -163,6 +176,17 @@ class TargetPosEstimationNode(Node):
         """Callback for PointCloud2 messages."""
         self.latest_pc = msg
 
+    def _camera_info_callback(self, msg):
+        """Callback for CameraInfo messages."""
+        if self.camera_info is None:
+            self.camera_info = msg
+            self.camera_matrix = np.array(msg.k).reshape((3, 3))
+            self.dist_coeffs = np.array(msg.d)
+            self.get_logger().info('Camera info received.')
+            # Unsubscribe after receiving camera info once
+            self.destroy_subscription(self.camera_info_sub)
+
+
     def _set_target_class_callback(self, request, response):
         """Service callback to set the target class for detection."""
         self.target_class = request.target_class
@@ -174,7 +198,7 @@ class TargetPosEstimationNode(Node):
     def _process_callback(self):
         """Timer callback to process images and detect objects."""
         # Check if we have all required data
-        if self.latest_rgb is None or self.latest_pc is None:
+        if self.latest_rgb is None or self.latest_pc is None or self.camera_matrix is None:
             return
 
         if self.target_class is None:
@@ -236,10 +260,10 @@ class TargetPosEstimationNode(Node):
             return
 
         # Resize mask to match point cloud dimensions if necessary
-        if target_mask.shape != (point_cloud.height, point_cloud.width):
+        if target_mask.shape != (rgb_image.shape[0], rgb_image.shape[1]):
             target_mask = cv2.resize(
                 target_mask,
-                (point_cloud.width, point_cloud.height),
+                (rgb_image.shape[1], rgb_image.shape[0]),
                 interpolation=cv2.INTER_NEAREST
             )
 
@@ -256,7 +280,7 @@ class TargetPosEstimationNode(Node):
             self._publish_annotated_image(rgb_image, target_mask, header, current_stamp)
 
 
-            self.get_logger().debug(
+            self.get_logger().info(
                 f'Published pose for "{self.target_class}": '
                 f'x={pose.pose.position.x:.3f}, '
                 f'y={pose.pose.position.y:.3f}, '
@@ -277,23 +301,82 @@ class TargetPosEstimationNode(Node):
         """
         # Get valid points within the mask
         mask_bool = mask > 0.5
+        
+        # If the point cloud is structured and registered, use the faster uvs method
+        if point_cloud.height > 1 and point_cloud.width > 1:
+            # This part is for structured point clouds
+            if mask.shape != (point_cloud.height, point_cloud.width):
+                mask_resized = cv2.resize(
+                    mask,
+                    (point_cloud.width, point_cloud.height),
+                    interpolation=cv2.INTER_NEAREST
+                )
+            else:
+                mask_resized = mask
+            
+            mask_bool_resized = mask_resized > 0.5
 
-        # Read points from the point cloud that correspond to the mask
-        points_generator = pc2.read_points(
-            point_cloud,
-            field_names=('x', 'y', 'z'),
-            skip_nans=True,
-            uvs=[(u, v) for v, u in zip(*np.where(mask_bool))]
-        )
+            points_generator = pc2.read_points(
+                point_cloud,
+                field_names=('x', 'y', 'z'),
+                skip_nans=True,
+                uvs=[(u, v) for u, v in zip(*np.where(mask_bool_resized))]
+            )
+            points = list(points_generator)
 
-        # Convert generator to a list of points
-        points = list(points_generator)
+        else:
+            # This part is for unstructured point clouds
+            # We need to project each point onto the image plane
+            points = []
+            # Create a rotation vector and translation vector for projection
+            rvec = np.zeros(3, dtype=np.float32)
+            tvec = np.zeros(3, dtype=np.float32)
 
-        if not points:
-            self.get_logger().debug('No valid points in mask')
+            # Read all points from the unstructured point cloud
+            all_points = pc2.read_points_numpy(point_cloud, field_names=('x', 'y', 'z'), skip_nans=True)
+            
+            if all_points.shape[0] == 0:
+                self.get_logger().warn('Point cloud is empty.')
+                return None, None
+
+            # Project all points to the image plane
+            # We assume the point cloud is in the camera's optical frame
+            image_points, _ = cv2.projectPoints(all_points, rvec, tvec, self.camera_matrix, self.dist_coeffs)
+
+            # Get image dimensions
+            img_h, img_w = mask.shape
+
+            # Filter points that are within the image bounds
+            image_points = image_points.squeeze()
+            
+            # Create a boolean index for points within the image frame
+            in_bounds_idx = (
+                (image_points[:, 0] >= 0) & (image_points[:, 0] < img_w) &
+                (image_points[:, 1] >= 0) & (image_points[:, 1] < img_h)
+            )
+
+            # Get the integer pixel coordinates for in-bounds points
+            pixel_coords = image_points[in_bounds_idx].astype(int)
+            
+            # Check if these pixel coordinates are inside the segmentation mask
+            # The mask_bool has shape (height, width)
+            # pixel_coords has shape (num_points, 2) with (x, y) which is (col, row)
+            # We need to index mask_bool with (row, col) which is (y, x)
+            mask_values = mask_bool[pixel_coords[:, 1], pixel_coords[:, 0]]
+
+            # The final points are the 3D points that are in bounds AND in the mask
+            valid_3d_points_idx = np.where(in_bounds_idx)[0][mask_values]
+            points = all_points[valid_3d_points_idx]
+
+
+        if not isinstance(points, np.ndarray):
+            points_arr = np.array(points)
+        else:
+            points_arr = points
+
+        if points_arr.shape[0] == 0:
+            self.get_logger().info('No valid points in mask')
             return None, None
-
-        points_arr = np.array(points)
 
         # --- Outlier removal ---
         if points_arr.shape[0] > 10: # Only filter if we have enough points
@@ -308,7 +391,7 @@ class TargetPosEstimationNode(Node):
             filtered_points = points_arr[inliers]
 
             if filtered_points.shape[0] == 0:
-                self.get_logger().debug('Outlier filter removed all points.')
+                self.get_logger().info('Outlier filter removed all points.')
                 return None, None
         else:
             filtered_points = points_arr
@@ -371,7 +454,7 @@ class TargetPosEstimationNode(Node):
 
         # Resize to half resolution
         h, w = annotated_image.shape[:2]
-        resized_image = cv2.resize(annotated_image, (w // 2, h // 2), interpolation=cv2.INTER_AREA)
+        resized_image = cv2.resize(annotated_image, (w // 4, h // 4), interpolation=cv2.INTER_AREA)
 
         # Compress to JPEG
         _, buffer = cv2.imencode('.jpg', resized_image)
