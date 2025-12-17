@@ -1,0 +1,5 @@
+<root main_tree_to_execute="MainTree">
+  <BehaviorTree ID="MainTree">
+    <FollowObject name="FollowPerson" tracked_frame="person_detected" max_duration="0.0"/>
+  </BehaviorTree>
+</root>

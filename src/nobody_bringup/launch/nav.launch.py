@@ -45,8 +45,7 @@ def generate_launch_description():
     # Configuration file paths
     slam_params_file = os.path.join(nobody_bringup_dir, 'config', 'mapper_params.yaml')
     nav2_params_file = os.path.join(nobody_bringup_dir, 'config', 'nav2_params.yaml')
-    nav_to_pose_bt_file = os.path.join(nobody_bringup_dir, 'behavior_trees', 'nav_to_pose_bt.xml')
-
+    
     # SLAM Toolbox launch
     slam_toolbox_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([
@@ -71,7 +70,6 @@ def generate_launch_description():
             'params_file': nav2_params_file,
             'slam': 'false',
             'use_sim_time': use_sim_time_config,
-            'default_nav_to_pose_bt_xml': nav_to_pose_bt_file,
         }.items(),
     )
 
