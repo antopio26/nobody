@@ -15,7 +15,8 @@ from sensor_msgs.msg import Image, PointCloud2, CompressedImage, CameraInfo
 from geometry_msgs.msg import PoseStamped, TransformStamped
 from nobody_interfaces.srv import SetTargetClass
 from cv_bridge import CvBridge
-from tf2_ros import TransformBroadcaster
+from tf2_ros import TransformBroadcaster, Buffer, TransformListener
+import tf2_geometry_msgs
 import sensor_msgs_py.point_cloud2 as pc2
 from std_msgs.msg import Header
 
@@ -37,6 +38,9 @@ class TargetPosEstimationNode(Node):
         self.declare_parameter('yolo_model', 'yolo11n-seg.pt')
         self.declare_parameter('confidence_threshold', 0.5)
         self.declare_parameter('outlier_std_dev_multiplier', 2.0)
+        self.declare_parameter('default_target_class', 'person')
+        self.declare_parameter('auto_start', True)
+        self.declare_parameter('target_frame', 'map')
 
 
         # Get parameter values and store in config dictionary
@@ -51,6 +55,9 @@ class TargetPosEstimationNode(Node):
             'yolo_model': self.get_parameter('yolo_model').value,
             'confidence_threshold': self.get_parameter('confidence_threshold').value,
             'outlier_std_dev_multiplier': self.get_parameter('outlier_std_dev_multiplier').value,
+            'default_target_class': self.get_parameter('default_target_class').value,
+            'auto_start': self.get_parameter('auto_start').value,
+            'target_frame': self.get_parameter('target_frame').value,
         }
 
         # Initialize CV bridge
@@ -62,6 +69,9 @@ class TargetPosEstimationNode(Node):
 
         # Target class to detect (set via service)
         self.target_class = None
+        if self.config['auto_start']:
+            self.target_class = self.config['default_target_class']
+            self.get_logger().info(f"Auto-starting with target class: {self.target_class}")
 
         # Latest data
         self.latest_rgb = None
@@ -116,8 +126,10 @@ class TargetPosEstimationNode(Node):
             self.config['filtered_pointcloud_topic'],
             10
         )
-
-
+        # Initialize TF broadcaster and listener
+        self.tf_broadcaster = TransformBroadcaster(self)
+        self.tf_buffer = Buffer()
+        self.tf_listener = TransformListener(self.tf_buffer, self)
         # Initialize TF broadcaster
         self.tf_broadcaster = TransformBroadcaster(self)
 
@@ -127,8 +139,8 @@ class TargetPosEstimationNode(Node):
             self._set_target_class_callback
         )
 
-        # Create timer for processing (10 Hz)
-        self.timer = self.create_timer(0.1, self._process_callback)
+        # Create timer for processing (5 Hz)
+        self.timer = self.create_timer(0.2, self._process_callback)
 
         self.get_logger().info('Argo Vision Node initialized')
         self.get_logger().info(f'Subscribing to RGB (Compressed): {self.config["image_topic"]}')
@@ -216,6 +228,19 @@ class TargetPosEstimationNode(Node):
         rgb_image = self.latest_rgb.copy()
         point_cloud = self.latest_pc
         header = point_cloud.header
+        target_frame = self.config['target_frame']
+
+        # --- Get transform from camera frame to target frame ---
+        try:
+            transform = self.tf_buffer.lookup_transform(
+                target_frame, header.frame_id, rclpy.time.Time()
+            )
+        except Exception as e:
+            self.get_logger().warn(
+                f'Could not transform {header.frame_id} to {target_frame}: {e}',
+                throttle_duration_sec=5.0
+            )
+            return
 
         # Run YOLO segmentation
         try:
@@ -268,23 +293,32 @@ class TargetPosEstimationNode(Node):
             )
 
         # Compute centroid from point cloud
-        pose, filtered_points = self._compute_centroid_pose(target_mask, point_cloud)
+        pose_in_camera_frame, filtered_points = self._compute_centroid_pose(target_mask, point_cloud)
 
-        if pose is not None and filtered_points is not None:
+        if pose_in_camera_frame is not None and filtered_points is not None:
             current_stamp = self.get_clock().now().to_msg()
 
+            # Transform pose to the target frame
+            pose_in_target_frame = tf2_geometry_msgs.do_transform_pose(pose_in_camera_frame.pose, transform)
+            pose_in_target_frame_stamped = PoseStamped()
+            pose_in_target_frame_stamped.pose = pose_in_target_frame
+
+            header_target = Header()
+            header_target.stamp = header.stamp
+            header_target.frame_id = target_frame
+
+
             # --- Publish everything ---
-            self._publish_pose(pose, header, current_stamp)
-            self._publish_tf(pose, header, current_stamp)
+            self._publish_pose(pose_in_target_frame_stamped, header_target, current_stamp)
+            self._publish_tf(pose_in_target_frame_stamped, header_target, current_stamp)
             self._publish_filtered_pointcloud(filtered_points, header, current_stamp)
             self._publish_annotated_image(rgb_image, target_mask, header, current_stamp)
 
-
             self.get_logger().info(
-                f'Published pose for "{self.target_class}": '
-                f'x={pose.pose.position.x:.3f}, '
-                f'y={pose.pose.position.y:.3f}, '
-                f'z={pose.pose.position.z:.3f}'
+                f'Published pose for "{self.target_class}" in "{target_frame}" frame: '
+                f'x={pose_in_target_frame_stamped.pose.position.x:.3f}, '
+                f'y={pose_in_target_frame_stamped.pose.position.y:.3f}, '
+                f'z={pose_in_target_frame_stamped.pose.position.z:.3f}'
             )
 
     def _compute_centroid_pose(self, mask, point_cloud):
