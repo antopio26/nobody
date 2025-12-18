@@ -16,7 +16,7 @@ target_pos_estimation_node:
     yolo_model: "yolo11n-seg.pt"  # YOLO11 nano segmentation model (fast)
 
     # Detection and processing parameters
-    confidence_threshold: 0.5
+    confidence_threshold: 0.8
     outlier_std_dev_multiplier: 2.0 # Multiplier for statistical outlier removal
     default_target_class: "person"
     auto_start: true

@@ -441,9 +441,9 @@ class TargetPosEstimationNode(Node):
         pose.pose.position.z = float(centroid[2])
 
         # Set orientation to identity (we don't estimate orientation)
-        pose.pose.orientation.w = 1.0
+        pose.pose.orientation.w = 0.525
         pose.pose.orientation.x = 0.0
-        pose.pose.orientation.y = 0.0
+        pose.pose.orientation.y = -0.851
         pose.pose.orientation.z = 0.0
 
         return pose, filtered_points
